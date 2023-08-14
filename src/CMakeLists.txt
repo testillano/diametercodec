@@ -1,0 +1,15 @@
+add_library (${ERT_DIAMETERCODEC_TARGET_NAME} STATIC
+        ${CMAKE_CURRENT_LIST_DIR}/functions.cpp
+)
+
+target_include_directories(${ERT_DIAMETERCODEC_TARGET_NAME}
+  PUBLIC ${ERT_DIAMETERCODEC_INCLUDE_BUILD_DIR}
+)
+
+target_link_libraries(${ERT_DIAMETERCODEC_TARGET_NAME}
+PRIVATE
+-static
+)
+
+install(TARGETS ${ERT_DIAMETERCODEC_TARGET_NAME}
+        ARCHIVE DESTINATION lib/ert)
