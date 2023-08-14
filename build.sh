@@ -9,7 +9,9 @@ base_tag__dflt=latest
 make_procs__dflt=$(grep processor /proc/cpuinfo -c)
 build_type__dflt=Release
 ert_logger_ver__dflt=v1.1.0
-ert_diametercodec_ver__dflt=v1.0.0
+nlohmann_json_ver__dflt=v3.10.5
+pboettch_jsonschemavalidator_ver__dflt=2.1.0
+google_test_ver__dflt=v1.11.0
 registry=ghcr.io/testillano
 
 #############
@@ -30,7 +32,7 @@ usage() {
          For headless mode you may prepend or export asked/environment variables for the corresponding
          docker procedure:
 
-         --builder-image: image_tag, base_os, base_tag (nghttp2), make_procs, build_type, ert_logger_ver, ert_diametercodec_ver
+         --builder-image: image_tag, base_os, base_tag (nghttp2), make_procs, build_type, ert_logger_ver, nlohmann_json_ver, pboettch_jsonschemavalidator_ver, google_test_ver
          --project:       make_procs, build_type, base_tag (diametercodec_builder)
          --project-image: image_tag, base_tag (diametercodec_builder), make_procs, build_type
          --auto:          any of the variables above
@@ -77,14 +79,18 @@ build_builder_image() {
   _read make_procs
   _read build_type
   _read ert_logger_ver
-  _read ert_diametercodec_ver
+  _read nlohmann_json_ver
+  _read pboettch_jsonschemavalidator_ver
+  _read google_test_ver
 
   bargs="--build-arg base_os=${base_os}"
   bargs+=" --build-arg base_tag=${base_tag}"
   bargs+=" --build-arg make_procs=${make_procs}"
   bargs+=" --build-arg build_type=${build_type}"
   bargs+=" --build-arg ert_logger_ver=${ert_logger_ver}"
-  bargs+=" --build-arg ert_diametercodec_ver=${ert_diametercodec_ver}"
+  bargs+=" --build-arg nlohmann_json_ver=${nlohmann_json_ver}"
+  bargs+=" --build-arg pboettch_jsonschemavalidator_ver=${pboettch_jsonschemavalidator_ver}"
+  bargs+=" --build-arg google_test_ver=${google_test_ver}"
 
   set -x
   rm -f CMakeCache.txt
@@ -99,7 +105,7 @@ build_project() {
   echo
   sources=$(find . -name "*.hpp" -o -name "*.cpp")
   echo "TEMPORARY: no source !"
-  #docker run -i --rm -v $PWD:/data frankwolf/astyle ${sources}
+  docker run -i --rm -v $PWD:/data frankwolf/astyle ${sources}
 
   echo
   echo "=== Build diametercodec project ==="

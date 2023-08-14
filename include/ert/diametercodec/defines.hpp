@@ -40,10 +40,10 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
+#include <cstdint>
+#include <utility>  // std::pair
 
 // Project
-#include <ert/diametercodec/defines.hpp>
 
 
 namespace ert
@@ -51,26 +51,48 @@ namespace ert
 namespace diametercodec
 {
 
-struct functions {
+// Basic types
+//      TYPE                    BITS (bytes)       Format
+//      ----------------------- ------------------ ---------------------------
+//      unsigned long int       32/64 (4/8)        lu
+//      long int                32/64 (4/8)        ld
+//
+//      unsigned long long int  64 (8)             llu
+//      long long int           64 (8)             lld
+//
+//      float                   32 (4)             f
+//      double                  64 (8)             lf
+//      long double             80 (10)            Lf
+//
+//      pointer = S.O. word     32/64              p
+typedef unsigned char U8;
+typedef char S8;
+typedef uint16_t U16;
+typedef int16_t S16;
+typedef uint32_t U32;
+typedef int32_t S32;
+typedef uint64_t U64;
+typedef int64_t S64;
+typedef float F32;
+typedef double F64;
+typedef long double F80;
+typedef U32 U24;
 
-    /**
-    * Returns Avp identification as string:
-    * <pre>
-    *           '(<code>,<vendorId>)'
-    * </pre>
-    */
-    static std::string avpIdAsPairString(const AvpId & avpId);
+// pares
+typedef std::pair < S32/*code*/, S32/*vendor-id*/ > AvpId;
+typedef std::pair < U24/*code*/, bool/*request indicator*/ > CommandId;
 
+//typedef std::pair<_avpId_t, U16> par_idAVP_ocurrencia_t;
 
-    /**
-    * Returns Command identification as string:
-    * <pre>
-    *           '(<code>,request|answer)'
-    * </pre>
-    */
-    static std::string commandIdAsPairString(const CommandId & commandId);
-};
+typedef unsigned int ApplicationId;
+
+// The Hop-by-Hop Identifier is an unsigned 32-bit integer field (in
+// network byte order) and aids in matching requests and replies.
+typedef unsigned int HopByHop;
+
+typedef unsigned int EndToEnd;
 
 }
 }
+
 

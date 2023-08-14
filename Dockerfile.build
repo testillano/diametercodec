@@ -9,6 +9,9 @@ WORKDIR /code/build
 ARG make_procs=4
 ARG build_type=Release
 ARG ert_logger_ver=v1.1.0
+ARG nlohmann_json_ver=v3.10.5
+ARG pboettch_jsonschemavalidator_ver=2.1.0
+ARG google_test_ver=v1.11.0
 
 RUN apk update && apk add \
     build-base cmake wget tar \
@@ -20,6 +23,27 @@ RUN apk update && apk add \
 RUN set -x && \
     wget https://github.com/testillano/logger/archive/${ert_logger_ver}.tar.gz && tar xvf ${ert_logger_ver}.tar.gz && cd logger-*/ && \
     cmake -DERT_LOGGER_BuildExamples=OFF -DCMAKE_BUILD_TYPE=${build_type} . && make -j${make_procs} && make install && \
+    cd .. && rm -rf * && \
+    set +x
+
+# nlohmann json
+RUN set -x && \
+    wget https://github.com/nlohmann/json/releases/download/${nlohmann_json_ver}/json.hpp && \
+    mkdir /usr/local/include/nlohmann && mv json.hpp /usr/local/include/nlohmann && \
+    set +x
+
+# pboettch json-schema-validator
+RUN set -x && \
+    wget https://github.com/pboettch/json-schema-validator/archive/${pboettch_jsonschemavalidator_ver}.tar.gz && \
+    tar xvf ${pboettch_jsonschemavalidator_ver}.tar.gz && cd json-schema-validator*/ && mkdir build && cd build && \
+    cmake .. && make -j${make_procs} && make install && \
+    cd ../.. && rm -rf * && \
+    set +x
+
+# google test framework
+RUN set -x && \
+    wget https://github.com/google/googletest/archive/refs/tags/release-$(echo ${google_test_ver} | cut -c2-).tar.gz && \
+    tar xvf release-$(echo ${google_test_ver} | cut -c2-).tar.gz && cd googletest-release*/ && cmake . && make -j${make_procs} install && \
     cd .. && rm -rf * && \
     set +x
 
