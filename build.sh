@@ -11,6 +11,10 @@ build_type__dflt=Release
 ert_logger_ver__dflt=v1.1.0
 nlohmann_json_ver__dflt=v3.10.5
 pboettch_jsonschemavalidator_ver__dflt=2.1.0
+jupp0r_prometheuscpp_ver__dflt=v0.13.0
+# 3rd party used by prometheus:
+civetweb_civetweb_ver__dflt=v1.14
+ert_metrics_ver__dflt=v1.1.0
 google_test_ver__dflt=v1.11.0
 registry=ghcr.io/testillano
 
@@ -32,7 +36,7 @@ usage() {
          For headless mode you may prepend or export asked/environment variables for the corresponding
          docker procedure:
 
-         --builder-image: image_tag, base_os, base_tag (nghttp2), make_procs, build_type, ert_logger_ver, nlohmann_json_ver, pboettch_jsonschemavalidator_ver, google_test_ver
+         --builder-image: image_tag, base_os, base_tag (nghttp2), make_procs, build_type, ert_logger_ver, nlohmann_json_ver, pboettch_jsonschemavalidator_ver, jupp0r_prometheuscpp_ver, civetweb_civetweb_ver, ert_metrics_ver, google_test_ver
          --project:       make_procs, build_type, base_tag (diametercodec_builder)
          --project-image: image_tag, base_tag (diametercodec_builder), make_procs, build_type
          --auto:          any of the variables above
@@ -81,6 +85,9 @@ build_builder_image() {
   _read ert_logger_ver
   _read nlohmann_json_ver
   _read pboettch_jsonschemavalidator_ver
+  _read jupp0r_prometheuscpp_ver
+  _read civetweb_civetweb_ver
+  _read ert_metrics_ver
   _read google_test_ver
 
   bargs="--build-arg base_os=${base_os}"
@@ -90,6 +97,9 @@ build_builder_image() {
   bargs+=" --build-arg ert_logger_ver=${ert_logger_ver}"
   bargs+=" --build-arg nlohmann_json_ver=${nlohmann_json_ver}"
   bargs+=" --build-arg pboettch_jsonschemavalidator_ver=${pboettch_jsonschemavalidator_ver}"
+  bargs+=" --build-arg jupp0r_prometheuscpp_ver=${jupp0r_prometheuscpp_ver}"
+  bargs+=" --build-arg civetweb_civetweb_ver=${civetweb_civetweb_ver}"
+  bargs+=" --build-arg ert_metrics_ver=${ert_metrics_ver}"
   bargs+=" --build-arg google_test_ver=${google_test_ver}"
 
   set -x
@@ -148,7 +158,7 @@ build_project_image() {
 build_auto() {
   # export defaults to automate, but allow possible environment values:
   # shellcheck disable=SC1090
-  source <(grep -E '^[2a-z_]+__dflt' "$0" | sed 's/^/export /' | sed 's/__dflt//' | sed -e 's/\([0a-z_]*\)=\(.*\)/\1=\${\1:-\2}/')
+  source <(grep -E '^[02a-z_]+__dflt' "$0" | sed 's/^/export /' | sed 's/__dflt//' | sed -e 's/\([0a-z_]*\)=\(.*\)/\1=\${\1:-\2}/')
   build_builder_image && build_project && build_project_image
 }
 
