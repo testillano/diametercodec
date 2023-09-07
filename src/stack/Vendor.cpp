@@ -39,35 +39,28 @@ SOFTWARE.
 
 
 // Project
-#include <ert/diametercodec/functions.hpp>
+#include <ert/diametercodec/stack/Vendor.hpp>
 
 
 namespace ert
 {
 namespace diametercodec
 {
+namespace stack
+{
 
-std::string functions::avpIdAsPairString(const AvpId & avpId) {
-    std::string result;
-    result = "(";
-    result += std::to_string(avpId.first);
-    result += ",";
-    result += std::to_string(avpId.second);
-    result += ")";
-    return (result);
+assign_enum(Vendor::Code) = { "Ietf", "Nokia", "Ericsson", "3GPP", "Telefonicaid", "Etsi", nullptr /* list end indicator */};
+
+nlohmann::json Vendor::asJson(void) const {
+    nlohmann::json result;
+
+    result["name"] = name_;
+    result["code"] = code_;
+
+    return result;
 }
 
-
-std::string functions::commandIdAsPairString(const CommandId & commandId) {
-    std::string result;
-    result = "(";
-    result += std::to_string(commandId.first);
-    result += ",";
-    result += (commandId.second ? "request" : "answer");
-    result += ")";
-    return (result);
 }
-
 }
 }
 

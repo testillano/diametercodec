@@ -1,4 +1,5 @@
-name: Main project workflow
+#name: Main project workflow
+name: CI
 on:
   # Build on demand:
   workflow_dispatch:
@@ -40,8 +41,9 @@ jobs:
           # docker cannot write on host directory:
           ! docker run -i --rm -v $PWD:/data frankwolf/astyle --dry-run ${sources} | grep ^Formatted
 
-  build_and_push:
-    name: Build and push docker images to Docker Hub
+  build_and_push_docker_images_as_local:
+    needs: format_style
+    name: Build and push docker images as local
     runs-on: ubuntu-latest
     #if: github.event_name == 'push'
     steps:
@@ -66,30 +68,105 @@ jobs:
         # logout at job end:
         logout: true
     -
-      name: Build (but not push) builder image
+      name: Build local builder image
       id: docker_build1
       uses: docker/build-push-action@v2
       with:
         tags: ghcr.io/testillano/diametercodec_builder:local
         file: Dockerfile.build
         context: .
-        #push: true
+        push: true
     -
       name: Image digest
       run: echo ${{ steps.docker_build1.outputs.digest }}
     -
-      name: Build (but not push) project image
+      name: Build local project image
       id: docker_build2
       uses: docker/build-push-action@v2
       with:
         tags: ghcr.io/testillano/diametercodec:local
         file: Dockerfile
-        context: .
-        #push: true
         build-args: base_tag=local
+        context: .
+        push: true
     -
       name: Image2 digest
       run: echo ${{ steps.docker_build2.outputs.digest }}
+
+  build_coverage:
+    needs: build_and_push_docker_images_as_local
+    name: Build local coverage image
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Check out the repo
+      uses: actions/checkout@v2
+    -
+      name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        # logout at job end:
+        logout: true
+    -
+      name: Build and push coverage image
+      id: docker_build5
+      uses: docker/build-push-action@v2
+      with:
+        tags: ghcr.io/testillano/diametercodec:latest-cov
+        file: Dockerfile.coverage
+        build-args: |
+          base_os=ubuntu
+          base_tag=local
+        context: .
+        push: true
+    -
+      name: Image digest
+      run: echo ${{ steps.docker_build5.outputs.digest }}
+
+  unit_tests_and_coverage:
+    needs: build_coverage
+    name: Run unit tests and upload coverage info
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/testillano/diametercodec:latest-cov
+      options: "--entrypoint sh"
+    steps:
+    -
+      name: Run coverage script
+      run: /var/coverage.sh
+    -
+      name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: total-coverage.info
+
+  push_docker_images_as_latest:
+    needs: unit_tests_and_coverage
+    name: Push docker images to Docker/Github Hubs as latest
+    runs-on: ubuntu-latest
+    #if: github.event_name == 'push'
+    steps:
+    -
+      name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        # logout at job end:
+        logout: true
+    -
+      name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        # logout at job end:
+        logout: true
     -
       name: Push images manually
       run: |
@@ -112,6 +189,8 @@ jobs:
         do
           for imgbn in diametercodec_builder diametercodec
           do
+            echo "Push '${imgbn}' local image from 'ghcr.io' hub"
+            docker pull ghcr.io/testillano/${imgbn}:local
             echo "Push '${imgbn}' image to '${hub}' hub"
             docker tag ghcr.io/testillano/${imgbn}:local ${hub}/testillano/${imgbn}:${image_tag}
             docker push ${hub}/testillano/${imgbn}:${image_tag}

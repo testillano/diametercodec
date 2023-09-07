@@ -83,6 +83,7 @@ set_cmake_compiler_flags()
 # Subdirectories #
 ##################
 add_subdirectory( src )
+add_subdirectory( ut )
 if (ERT_DIAMETERCODEC_BuildExamples)
   add_subdirectory( examples )
 endif()

@@ -40,59 +40,107 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <cstdint>
-#include <utility>  // std::pair
+#include <string>
+#include <stdexcept>
 
 // Project
+#include <nlohmann/json.hpp>
+#include <ert/diametercodec/core/defines.hpp>
 
 
 namespace ert
 {
 namespace diametercodec
 {
+namespace stack
+{
 
-// Basic types
-//      TYPE                    BITS (bytes)       Format
-//      ----------------------- ------------------ ---------------------------
-//      unsigned long int       32/64 (4/8)        lu
-//      long int                32/64 (4/8)        ld
-//
-//      unsigned long long int  64 (8)             llu
-//      long long int           64 (8)             lld
-//
-//      float                   32 (4)             f
-//      double                  64 (8)             lf
-//      long double             80 (10)            Lf
-//
-//      pointer = S.O. word     32/64              p
-typedef unsigned char U8;
-typedef char S8;
-typedef uint16_t U16;
-typedef int16_t S16;
-typedef uint32_t U32;
-typedef int32_t S32;
-typedef uint64_t U64;
-typedef int64_t S64;
-typedef float F32;
-typedef double F64;
-typedef long double F80;
-typedef U32 U24;
+class Dictionary;
 
-// pares
-typedef std::pair < S32/*code*/, S32/*vendor-id*/ > AvpId;
-typedef std::pair < U24/*code*/, bool/*request indicator*/ > CommandId;
+/**
+* AVP rule information
+*/
+class AvpRule {
 
-//typedef std::pair<_avpId_t, U16> par_idAVP_ocurrencia_t;
+public:
 
-typedef unsigned int ApplicationId;
+    struct Presence {
+        enum _v {
+            None = -1,
+            Fixed,
+            Mandatory,
+            Optional
+        };
 
-// The Hop-by-Hop Identifier is an unsigned 32-bit integer field (in
-// network byte order) and aids in matching requests and replies.
-typedef unsigned int HopByHop;
+        declare_enum(Presence);
 
-typedef unsigned int EndToEnd;
+        /**
+        * Presence description
+        * @param v Presence type
+        * @return Presence description
+        */
+        static const char* asText(const Presence::_v v) {
+            return asCString(v);
+        }
+    };
+
+private:
+
+    const Dictionary *dictionary_;
+    core::AvpId avp_id_; // reference
+    Presence::_v presence_;
+    std::string qual_;
+
+public:
+
+
+    AvpRule(const Dictionary *d = nullptr) {
+        dictionary_ = d;
+        presence_ = Presence::None;
+        qual_ = "";
+    }
+    ~AvpRule() {};
+
+
+    // getters
+    std::string getAvpName(void) const;
+    const Presence::_v & getPresence(void) const {
+        return presence_;
+    }
+    const std::string & getQual(void) const {
+        return qual_;
+    }
+
+    // helpers
+    core::AvpId getId(void) const {
+        return avp_id_;
+    }
+    bool isAny(void) const; // generic Avp
+    bool isFixed(void) const {
+        return (presence_ == Presence::Fixed);
+    }
+    bool isMandatory(void) const {
+        return (presence_ == Presence::Mandatory);
+    }
+    bool isOptional(void) const {
+        return (presence_ == Presence::Optional);
+    }
+    int getQualMin(void) const ;
+    int getQualMax(void) const ; // -1 is infinite
+
+    nlohmann::json asJson() const;
+
+    // setters
+    void setAvpId(const core::AvpId & ai) {
+        avp_id_ = ai;
+    }
+    void setPresence(const Presence::_v & p) {
+        presence_ = p;
+    }
+    void setQual(const std::string & q);
+};
 
 }
 }
-
+}
 
