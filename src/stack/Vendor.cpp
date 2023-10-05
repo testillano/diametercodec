@@ -49,8 +49,6 @@ namespace diametercodec
 namespace stack
 {
 
-assign_enum(Vendor::Code) = { "Ietf", "Nokia", "Ericsson", "3GPP", "Telefonicaid", "Etsi", nullptr /* list end indicator */};
-
 nlohmann::json Vendor::asJson(void) const {
     nlohmann::json result;
 

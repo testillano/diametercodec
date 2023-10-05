@@ -1,6 +1,7 @@
 add_executable( unit-test "")
 
 add_subdirectory(core)
+add_subdirectory(stack)
 
 # To avoid setting absolute paths for libraries down at 'target_link_libraries':
 #add_library(ert_logger STATIC IMPORTED)

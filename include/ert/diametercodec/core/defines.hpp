@@ -76,11 +76,6 @@ SOFTWARE.
  */
 #define declare_enum(name) \
    static const char* literal[]; \
-   static int calculateSize () { \
-      int ii = 0; \
-      while (literal[ii] != nullptr) ii ++; \
-      return ii; \
-   } \
    static _v asEnum (const std::string &str) { \
       for (int ii = 0; literal[ii] != nullptr; ii ++) { \
          if (std::string(literal[ii]) == str) \
@@ -89,7 +84,8 @@ SOFTWARE.
       return None; \
    } \
    static _v asEnum (const char *str) { return asEnum (std::string(str)); } \
-   static const char* asCString (const _v v) { return (v != None) ? literal[v]: nullptr; } \
+   static const char* asCString (const _v v) { return (v != None) ? literal [v]: nullptr; }
+/*
    static const char* asNotNullCString (const _v v) { return (v != None) ? literal[v]:"<none>"; } \
    static std::string asList () {\
       std::string result;\
@@ -100,6 +96,7 @@ SOFTWARE.
       } \
       return result; \
    }
+*/
 
 /**
  * \page assign_enum
@@ -115,11 +112,11 @@ SOFTWARE.
  */
 #define assign_enum(name) const char* name::literal []
 
-/**
- * \page item_enum
- * Enumerate access by position
- */
-#define item_enum(name,ii) name::literal[ii]
+///**
+// * \page item_enum
+// * Enumerate access by position
+// */
+//#define item_enum(name,ii) name::literal[ii]
 
 
 namespace ert

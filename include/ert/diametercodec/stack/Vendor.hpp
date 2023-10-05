@@ -64,30 +64,6 @@ class Vendor {
 
 public:
 
-    struct Code {
-        enum _v {
-            None = -1, // Initialized
-            Ietf = 0,
-            Nokia = 94,
-            Ericsson = 193,
-            TresGPP = 10415,
-            Telefonicaid = 5189,
-            Etsi = 13019
-        };
-
-        declare_enum(Code);
-
-        /**
-        * Vendor description
-        * @param v Vendor code
-        * @return Vendor name
-        */
-        static const char* asText(const Code::_v v) {
-            return asCString(v);
-        }
-    };
-
-
     Vendor() {};
     ~Vendor() {};
 
