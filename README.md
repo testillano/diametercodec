@@ -199,6 +199,16 @@ endif()
 target_link_libraries(foo PRIVATE ert_diametercodec::ert_diametercodec)
 ```
 
+## Examples
+
+Examples are packaged on project image, so you could run by mean:
+
+```bash
+$> docker run --rm -it  --entrypoint "/opt/printHardcodedStacks" ghcr.io/testillano/diametercodec:latest
+-or-
+...
+```
+
 ## Contributing
 
 Please, execute `astyle` formatting (using [frankwolf image](https://hub.docker.com/r/frankwolf/astyle)) before any pull request:

@@ -1,3 +1,4 @@
+#include <iostream>
 /*
  ________________________________________________________________________
 |                                                                        |
@@ -57,8 +58,8 @@ bool Avp::isChild(const core::AvpId & avpId) const {
 
     if(!format->isGrouped()) return false;
 
-    for(const_avprule_iterator it = avprule_begin(); it != avprule_end(); it++)
-        if(avpId == ((*it).second.getId()))
+    for(auto it: avprules_)
+        if(avpId == (it.second.getId()))
             return true;
 
     return false;
@@ -115,8 +116,8 @@ nlohmann::json Avp::asJson(void) const {
     result["name"] = name_;
     result["code"] = id_.first;
     if(id_.second != 0) result["vendor-name"] = vendor_name_;
-    result["v-bit"] = v_bit_;
-    result["m-bit"] = m_bit_;
+    if (v_bit_) result["v-bit"] = v_bit_;
+    if (m_bit_) result["m-bit"] = m_bit_;
 
     const Format * format = getFormat();
 
@@ -124,8 +125,8 @@ nlohmann::json Avp::asJson(void) const {
 
         // Build rules array:
         nlohmann::json aux;
-        for(const_avprule_iterator it = avprule_begin(); it != avprule_end(); it++)
-            aux.push_back((*it).second.asJson());
+        for(auto it: avprules_)
+            aux.push_back(it.second.asJson());
 
         result["grouped"]["avprule"] = aux;
 
@@ -140,9 +141,9 @@ nlohmann::json Avp::asJson(void) const {
         if(hasAliases()) {
             // Build labels array:
             nlohmann::json aux, labelJson;
-            for(const_label_iterator it = label_begin(); it != label_end(); it++) {
-                labelJson["data"] = (*it).first;
-                labelJson["alias"] = (*it).second;
+            for(auto it: labels_) {
+                labelJson["data"] = it.first;
+                labelJson["alias"] = it.second;
                 aux.push_back(labelJson);
             }
             result["single"]["label"] = aux;

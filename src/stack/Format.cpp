@@ -55,7 +55,8 @@ assign_enum(Format::Type) = { "Unknown", "Any", "OctetString", "Integer32", "Int
 nlohmann::json Format::asJson(void) const {
     nlohmann::json result;
 
-    result["format"] = name_;
+    result["name"] = name_;
+    if (!parent_name_.empty()) result["parent-type"] = parent_name_;
 
     return result;
 }

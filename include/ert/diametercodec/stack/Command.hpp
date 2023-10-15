@@ -46,6 +46,7 @@ SOFTWARE.
 // Project
 #include <nlohmann/json.hpp>
 #include <ert/diametercodec/core/defines.hpp>
+#include <ert/diametercodec/stack/Avp.hpp>
 #include <ert/diametercodec/stack/AvpRule.hpp>
 #include <ert/diametercodec/stack/Format.hpp>
 
@@ -57,25 +58,15 @@ namespace diametercodec
 namespace stack
 {
 
-class Dictionary;
-
 /**
 * Command information
 */
 class Command {
 
-public:
-
-    typedef std::map < int /*position*/, AvpRule > avprule_container;
-    typedef avprule_container::iterator avprule_iterator;
-    typedef avprule_container::const_iterator const_avprule_iterator;
-
-
-private:
-
-    const Dictionary *dictionary_;
     core::CommandId id_;
     std::string name_;
+    core::U32 application_id_;
+    bool p_bit_;
 
     // Children:
     avprule_container avprules_;
@@ -84,9 +75,10 @@ private:
 
 public:
 
-    Command(const Dictionary *d = nullptr) {
-        dictionary_ = d;
+    Command() {
         avprules_.clear();
+        p_bit_ = false;
+        id_ = {0,false};
         allow_fixed_rule_ = true;
         avprule_position_ = 0;
     }
@@ -97,22 +89,19 @@ public:
     const core::CommandId & getId(void) const {
         return id_;
     }
+    const core::U32 & getApplicationId() {
+        return application_id_;
+    }
     const std::string & getName(void) const {
         return name_;
     }
-
-
-    // containers
-    const_avprule_iterator avprule_begin() const {
-        return avprules_.begin();
-    }
-    const_avprule_iterator avprule_end() const {
-        return avprules_.end();
-    }
-    int avprule_size() const {
-        return avprules_.size();
+    bool pBit(void) const {
+        return p_bit_;
     }
 
+    const avprule_container &avprules() const {
+        return avprules_;
+    }
 
     // helpers
     bool isEmpty(void) const {
@@ -131,14 +120,16 @@ public:
 
     // set
     void setCode(const core::U24 & c) {
-
         id_.first = c;
+    }
+    void setApplicationId(const core::U32 & ai) {
+        application_id_ = ai;
     }
     void setRequest(bool r = true) {
         id_.second = r;
     }
-    void setAnswer(bool a = true) {
-        id_.second = a;
+    void setPbit(bool b = true) {
+        p_bit_ = b;
     }
     void setName(const std::string & n) {
         if(n.empty()) throw std::runtime_error("Empty command-name string not allowed");

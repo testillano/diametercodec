@@ -58,114 +58,103 @@ const nlohmann::json base = R"(
 {
     "name": "Base protocol dictionary",
     "vendor": [
-        { "name": "IETF", "code": 0 }
+        { "name": "IETF", "code": 0 },
+        { "name": "NOKIA", "code": 94 },
+        { "name": "ERICSSON", "code": 193 },
+        { "name": "TELEFONICAID", "code": 5189 },
+        { "name": "3GPP", "code": 10415 },
+        { "name": "ETSI", "code": 13019 }
     ],
     "avp": [
         {
             "name": "User-Name",
             "code": 1,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "NAS-IP-Address",
             "code": 4,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Framed-IP-Address",
             "code": 8,
-            "v-bit": false,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Filter-Id",
             "code": 11,
-            "v-bit": false,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Class",
             "code": 25,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Session-Timeout",
             "code": 27,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Called-Station-Id",
             "code": 30,
-            "v-bit": false,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Proxy-State",
             "code": 33,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Accounting-Session-Id",
             "code": 44,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Acct-Multi-Session-Id",
             "code": 50,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Event-Timestamp",
             "code": 55,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Time" }
         },
         {
             "name": "Acct-Interim-Interval",
             "code": 85,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Framed-IPv6-Prefix",
             "code": 97,
-            "v-bit": false,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Host-IP-Address",
             "code": 257,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Address" }
         },
         {
             "name": "Auth-Application-Id",
             "code": 258,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Acct-Application-Id",
             "code": 259,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "label": [
@@ -177,7 +166,6 @@ const nlohmann::json base = R"(
         {
             "name": "Vendor-Specific-Application-Id",
             "code": 260,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -190,7 +178,6 @@ const nlohmann::json base = R"(
         {
             "name": "Redirect-Host-Usage",
             "code": 261,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-6",
@@ -209,49 +196,41 @@ const nlohmann::json base = R"(
         {
             "name": "Redirect-Max-Cache-Time",
             "code": 262,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Session-Id",
             "code": 263,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Origin-Host",
             "code": 264,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Supported-Vendor-Id",
             "code": 265,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Vendor-Id",
             "code": 266,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Firmware-Revision",
             "code": 267,
-            "v-bit": false,
-            "m-bit": false,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Result-Code",
             "code": 268,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "label": [
@@ -310,14 +289,11 @@ const nlohmann::json base = R"(
         {
             "name": "Product-Name",
             "code": 269,
-            "v-bit": false,
-            "m-bit": false,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Session-Binding",
             "code": 270,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "label": [
@@ -331,7 +307,6 @@ const nlohmann::json base = R"(
         {
             "name": "Session-Server-Failover",
             "code": 271,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-3",
@@ -347,14 +322,12 @@ const nlohmann::json base = R"(
         {
             "name": "Multi-Round-Time-Out",
             "code": 272,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Disconnect-Cause",
             "code": 273,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-2",
@@ -369,7 +342,6 @@ const nlohmann::json base = R"(
         {
             "name": "Auth-Request-Type",
             "code": 274,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-3",
@@ -385,14 +357,12 @@ const nlohmann::json base = R"(
         {
             "name": "Auth-Grace-Period",
             "code": 276,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Auth-Session-State",
             "code": 277,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -406,14 +376,12 @@ const nlohmann::json base = R"(
         {
             "name": "Origin-State-Id",
             "code": 278,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Failed-AVP",
             "code": 279,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -424,35 +392,29 @@ const nlohmann::json base = R"(
         {
             "name": "Proxy-Host",
             "code": 280,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Error-Message",
             "code": 281,
-            "v-bit": false,
-            "m-bit": false,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Route-Record",
             "code": 282,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Destination-Realm",
             "code": 283,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Proxy-Info",
             "code": 284,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -465,7 +427,6 @@ const nlohmann::json base = R"(
         {
             "name": "Re-Auth-Request-Type",
             "code": 285,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -479,42 +440,35 @@ const nlohmann::json base = R"(
         {
             "name": "Accounting-Sub-Session-Id",
             "code": 287,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "Authorization-Lifetime",
             "code": 291,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Redirect-Host",
             "code": 292,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterURI" }
         },
         {
             "name": "Destination-Host",
             "code": 293,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Error-Reporting-Host",
             "code": 294,
-            "v-bit": false,
-            "m-bit": false,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Termination-Cause",
             "code": 295,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "1-8",
@@ -534,14 +488,12 @@ const nlohmann::json base = R"(
         {
             "name": "Origin-Realm",
             "code": 296,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "DiameterIdentity" }
         },
         {
             "name": "Experimental-Result",
             "code": 297,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -553,7 +505,6 @@ const nlohmann::json base = R"(
         {
             "name": "Experimental-Result-Code",
             "code": 298,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "label": [
@@ -569,7 +520,6 @@ const nlohmann::json base = R"(
         {
             "name": "Inband-Security-Id",
             "code": 299,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "label": [
@@ -582,7 +532,6 @@ const nlohmann::json base = R"(
         {
             "name": "E2E-Sequence-AVP",
             "code": 300,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -591,68 +540,20 @@ const nlohmann::json base = R"(
             }
         },
         {
-            "name": "Accounting-Record-Type",
-            "code": 480,
-            "v-bit": false,
-            "m-bit": true,
-            "single": {
-                "enum": "1-4",
-                "label": [
-                    { "data": "1", "alias": "EVENT_RECORD" },
-                    { "data": "2", "alias": "START_RECORD" },
-                    { "data": "3", "alias": "INTERIM_RECORD" },
-                    { "data": "4", "alias": "STOP_RECORD" }
-                ],
-                "format": "Enumerated"
-            }
-        },
-        {
-            "name": "Accounting-Interim-Interval",
-            "code": 482,
-            "v-bit": false,
-            "m-bit": true,
-            "single": { "format": "Integer32" }
-        },
-        {
-            "name": "Accounting-Realtime-Required",
-            "code": 483,
-            "v-bit": false,
-            "m-bit": true,
-            "single": {
-                "enum": "1-3",
-                "label": [
-                    { "data": "1", "alias": "DELIVER_AND_GRANT" },
-                    { "data": "2", "alias": "GRANT_AND_STORE" },
-                    { "data": "3", "alias": "GRANT_AND_LOSE" }
-                ],
-                "format": "Enumerated"
-            }
-        },
-        {
-            "name": "Accounting-Record-Number",
-            "code": 485,
-            "v-bit": false,
-            "m-bit": true,
-            "single": { "format": "Unsigned32" }
-        },
-        {
             "name": "CC-Correlation-Id",
             "code": 411,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "CC-Input-Octets",
             "code": 412,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "CC-Money",
             "code": 413,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -664,21 +565,18 @@ const nlohmann::json base = R"(
         {
             "name": "CC-Output-Octets",
             "code": 414,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "CC-Request-Number",
             "code": 415,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "CC-Request-Type",
             "code": 416,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "1-4",
@@ -694,14 +592,12 @@ const nlohmann::json base = R"(
         {
             "name": "CC-Service-Specific-Units",
             "code": 417,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "CC-Session-Failover",
             "code": 418,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -715,28 +611,24 @@ const nlohmann::json base = R"(
         {
             "name": "CC-Sub-Session-Id",
             "code": 419,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "CC-Time",
             "code": 420,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "CC-Total-Octets",
             "code": 421,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned64" }
         },
         {
             "name": "Check-Balance-Result",
             "code": 422,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -750,7 +642,6 @@ const nlohmann::json base = R"(
         {
             "name": "Cost-Information",
             "code": 423,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -763,21 +654,18 @@ const nlohmann::json base = R"(
         {
             "name": "Cost-Unit",
             "code": 424,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Currency-Code",
             "code": 425,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Credit-Control",
             "code": 426,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -791,7 +679,6 @@ const nlohmann::json base = R"(
         {
             "name": "Credit-Control-Failure-Handling",
             "code": 427,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-2",
@@ -806,7 +693,6 @@ const nlohmann::json base = R"(
         {
             "name": "Direct-Debiting-Failure-Handling",
             "code": 428,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -820,14 +706,12 @@ const nlohmann::json base = R"(
         {
             "name": "Exponent",
             "code": 429,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Integer32" }
         },
         {
             "name": "Final-Unit-Indication",
             "code": 430,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -841,7 +725,6 @@ const nlohmann::json base = R"(
         {
             "name": "Granted-Service-Unit",
             "code": 431,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -859,14 +742,12 @@ const nlohmann::json base = R"(
         {
             "name": "Rating-Group",
             "code": 432,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Redirect-Address-Type",
             "code": 433,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-3",
@@ -882,7 +763,6 @@ const nlohmann::json base = R"(
         {
             "name": "Redirect-Server",
             "code": 434,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -894,14 +774,12 @@ const nlohmann::json base = R"(
         {
             "name": "Redirect-Server-Address",
             "code": 435,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Requested-Action",
             "code": 436,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-3",
@@ -917,7 +795,6 @@ const nlohmann::json base = R"(
         {
             "name": "Requested-Service-Unit",
             "code": 437,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -934,22 +811,19 @@ const nlohmann::json base = R"(
         {
             "name": "Restriction-Filter-Rule",
             "code": 438,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "IPFilterRule" }
         },
         {
             "name": "Service-Identifier",
             "code": 439,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Service-Parameter-Info",
             "code": 440,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "grouped": {
                 "avprule": [
                     { "type": "Mandatory", "name": "Service-Parameter-Type" },
@@ -960,21 +834,18 @@ const nlohmann::json base = R"(
         {
             "name": "Service-Parameter-Type",
             "code": 441,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Service-Parameter-Value",
             "code": 442,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Subscription-Id",
             "code": 443,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -986,14 +857,12 @@ const nlohmann::json base = R"(
         {
             "name": "Subscription-Id-Data",
             "code": 444,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
         },
         {
             "name": "Unit-Value",
             "code": 445,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -1005,7 +874,6 @@ const nlohmann::json base = R"(
         {
             "name": "Used-Service-Unit",
             "code": 446,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -1023,21 +891,18 @@ const nlohmann::json base = R"(
         {
             "name": "Value-Digits",
             "code": 447,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Integer64" }
         },
         {
             "name": "Validity-Time",
             "code": 448,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "Final-Unit-Action",
             "code": 449,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-2",
@@ -1052,7 +917,6 @@ const nlohmann::json base = R"(
         {
             "name": "Subscription-Id-Type",
             "code": 450,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-4",
@@ -1069,14 +933,12 @@ const nlohmann::json base = R"(
         {
             "name": "Tariff-Time-Change",
             "code": 451,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Time" }
         },
         {
             "name": "Tariff-Change-Usage",
             "code": 452,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-2",
@@ -1091,14 +953,12 @@ const nlohmann::json base = R"(
         {
             "name": "G-S-U-Pool-Identifier",
             "code": 453,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "Unsigned32" }
         },
         {
             "name": "CC-Unit-Type",
             "code": 454,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-5",
@@ -1116,7 +976,6 @@ const nlohmann::json base = R"(
         {
             "name": "Multiple-Services-Indicator",
             "code": 455,
-            "v-bit": false,
             "m-bit": true,
             "single": {
                 "enum": "0-1",
@@ -1130,7 +989,6 @@ const nlohmann::json base = R"(
         {
             "name": "Multiple-Services-Credit-Control",
             "code": 456,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -1151,7 +1009,6 @@ const nlohmann::json base = R"(
         {
             "name": "G-S-U-Pool-Reference",
             "code": 457,
-            "v-bit": false,
             "m-bit": true,
             "grouped": {
                 "avprule": [
@@ -1164,8 +1021,7 @@ const nlohmann::json base = R"(
         {
             "name": "User-Equipment-Info",
             "code": 458,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "grouped": {
                 "avprule": [
                     { "type": "Mandatory", "name": "User-Equipment-Info-Type" },
@@ -1176,8 +1032,7 @@ const nlohmann::json base = R"(
         {
             "name": "User-Equipment-Info-Type",
             "code": 459,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "single": {
                 "enum": "0-3",
                 "label": [
@@ -1192,16 +1047,55 @@ const nlohmann::json base = R"(
         {
             "name": "User-Equipment-Info-Value",
             "code": 460,
-            "v-bit": false,
-            "m-bit": "may",
+            "m-bit": true,
             "single": { "format": "OctetString" }
         },
         {
             "name": "Service-Context-Id",
             "code": 461,
-            "v-bit": false,
             "m-bit": true,
             "single": { "format": "UTF8String" }
+        },
+        {
+            "name": "Accounting-Record-Type",
+            "code": 480,
+            "m-bit": true,
+            "single": {
+                "enum": "1-4",
+                "label": [
+                    { "data": "1", "alias": "EVENT_RECORD" },
+                    { "data": "2", "alias": "START_RECORD" },
+                    { "data": "3", "alias": "INTERIM_RECORD" },
+                    { "data": "4", "alias": "STOP_RECORD" }
+                ],
+                "format": "Enumerated"
+            }
+        },
+        {
+            "name": "Accounting-Interim-Interval",
+            "code": 482,
+            "m-bit": true,
+            "single": { "format": "Integer32" }
+        },
+        {
+            "name": "Accounting-Realtime-Required",
+            "code": 483,
+            "m-bit": true,
+            "single": {
+                "enum": "1-3",
+                "label": [
+                    { "data": "1", "alias": "DELIVER_AND_GRANT" },
+                    { "data": "2", "alias": "GRANT_AND_STORE" },
+                    { "data": "3", "alias": "GRANT_AND_LOSE" }
+                ],
+                "format": "Enumerated"
+            }
+        },
+        {
+            "name": "Accounting-Record-Number",
+            "code": 485,
+            "m-bit": true,
+            "single": { "format": "Unsigned32" }
         }
     ],
     "command": [
@@ -1245,8 +1139,7 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "name": "Vendor-Specific-Application-Id" },
                 { "type": "Optional", "name": "Firmware-Revision" },
                 { "type": "Optional", "qual": "*", "name": "AVP" }
-            ],
-            "r-bit": false
+            ]
         },
         {
             "name": "Re-Auth-Request",
@@ -1287,7 +1180,6 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "qual": "*", "name": "Proxy-Info" },
                 { "type": "Optional", "qual": "*", "name": "AVP" }
             ],
-            "r-bit": false,
             "p-bit": true
         },
         {
@@ -1341,7 +1233,6 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "qual": "*", "name": "Proxy-Info" },
                 { "type": "Optional", "qual": "*", "name": "AVP" }
             ],
-            "r-bit": false,
             "p-bit": true
         },
         {
@@ -1381,7 +1272,6 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "qual": "*", "name": "Proxy-Info" },
                 { "type": "Optional", "qual": "*", "name": "AVP" }
             ],
-            "r-bit": false,
             "p-bit": true
         },
         {
@@ -1425,7 +1315,6 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "qual": "*", "name": "Proxy-Info" },
                 { "type": "Optional", "qual": "*", "name": "AVP" }
             ],
-            "r-bit": false,
             "p-bit": true
         },
         {
@@ -1448,8 +1337,7 @@ const nlohmann::json base = R"(
                 { "type": "Optional", "name": "Error-Message" },
                 { "type": "Optional", "qual": "*", "name": "Failed-AVP" },
                 { "type": "Optional", "name": "Origin-State-Id" }
-            ],
-            "r-bit": false
+            ]
         },
         {
             "name": "Disconnect-Peer-Request",
@@ -1470,8 +1358,7 @@ const nlohmann::json base = R"(
                 { "type": "Mandatory", "name": "Origin-Realm" },
                 { "type": "Optional", "name": "Error-Message" },
                 { "type": "Optional", "qual": "*", "name": "Failed-AVP" }
-            ],
-            "r-bit": false
+            ]
         }
     ]
 }

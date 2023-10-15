@@ -69,8 +69,8 @@ void Command::addAvpRule(const AvpRule & avpRule) {
 }
 
 bool Command::isChild(const core::AvpId & avpId) const {
-    for(const_avprule_iterator it = avprule_begin(); it != avprule_end(); it++)
-        if(avpId == ((*it).second.getId()))
+    for(auto it: avprules_)
+        if(avpId == (it.second.getId()))
             return true;
 
     return false;
@@ -81,13 +81,15 @@ nlohmann::json Command::asJson(void) const {
 
     result["name"] = name_;
     result["code"] = id_.first;
-    result["r-bit"] = id_.second;
+    if (id_.second) result["r-bit"] = id_.second;
+    if (p_bit_) result["p-bit"] = p_bit_;
+    if (application_id_ != 0) result["application-id"] = application_id_;
 
     // Build avprule array
     nlohmann::json aux;
 
-    for(const_avprule_iterator it = avprule_begin(); it != avprule_end(); it++)
-        aux.push_back((*it).second.asJson());
+    for(auto it: avprules_)
+        aux.push_back(it.second.asJson());
 
     result["avprule"] = aux;
 

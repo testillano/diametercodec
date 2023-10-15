@@ -57,12 +57,10 @@ namespace diametercodec
 namespace stack
 {
 
-typedef std::map < int /*position*/, AvpRule > avprule_container;
-typedef avprule_container::iterator avprule_iterator;
-typedef avprule_container::const_iterator const_avprule_iterator;
-
 class Format;
 class Dictionary;
+
+typedef std::map < int /*position*/, AvpRule > avprule_container;
 
 /**
 * Avp Reference information
@@ -77,8 +75,6 @@ public:
         }
     };
     typedef std::map < std::string /* data */, std::string /* alias */, lessLabel > label_container;
-    typedef label_container::iterator label_iterator;
-    typedef label_container::const_iterator const_label_iterator;
 
 private:
 
@@ -96,7 +92,7 @@ private:
     label_container labels_;
 
     // Grouped:
-    avprule_container avprules_;
+    std::map <int /*position*/, AvpRule > avprules_;
     bool allow_fixed_rule_;
     int avprule_position_;
 
@@ -144,31 +140,17 @@ public:
         return enums_.getLiteral().c_str();
     }
     const char * getAlias(const std::string data) const {
-        std::map<std::string, std::string>::const_iterator it = labels_.find(data);
+        auto it = labels_.find(data);
         return ((it != labels_.end()) ? ((*it).second.c_str()) : nullptr);
     }
 
-    // containers
-    const_avprule_iterator avprule_begin() const {
-        return avprules_.begin();
-    }
-    const_avprule_iterator avprule_end() const {
-        return avprules_.end();
-    }
-    int avprule_size() const {
-        return avprules_.size();
+    const avprule_container &avprules() const {
+        return avprules_;
     }
 
-    const_label_iterator label_begin() const {
-        return labels_.begin();
+    const label_container &labels() const {
+        return labels_;
     }
-    const_label_iterator label_end() const {
-        return labels_.end();
-    }
-    int label_size() const {
-        return labels_.size();
-    }
-
 
     // helpers
     bool allowEnum(int value) const {

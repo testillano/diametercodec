@@ -112,7 +112,7 @@ nlohmann::json AvpRule::asJson(void) const {
 
     if (dictionary_->getAvp(avp_id_)) {
         result["type"] = Presence::asText(presence_);
-        result["qual"] = qual_;
+        if (!qual_.empty()) result["qual"] = qual_;
         result["name"] = getAvpName();
     }
 

@@ -1,3 +1,4 @@
+#include <iostream>
 /*
  ________________________________________________________________________
 |                                                                        |
@@ -163,57 +164,57 @@ void Dictionary::addCommand(const Command & command) {
 }
 
 const Format * Dictionary::getFormat(const std::string & formatName) const {
-    const_format_iterator it = formats_.find(formatName);
+    auto it = formats_.find(formatName);
 
-    if(it != format_end()) return ((const Format *) & ((*it).second));
+    if(it != formats_.end()) return &(it->second);
 
     return (nullptr);
 }
 
 const Vendor * Dictionary::getVendor(core::S32 vendorId) const {
-    const_vendor_iterator it = vendors_.find(vendorId);
+    auto it = vendors_.find(vendorId);
 
-    if(it != vendor_end()) return ((const Vendor *) & ((*it).second));
+    if(it != vendors_.end()) return &(it->second);
 
     return (nullptr);
 }
 
 const Vendor * Dictionary::getVendor(const std::string & vendorName) const {
-    const_vendorNames_iterator v_it = vendor_names_.find(vendorName);
+    auto it = vendor_names_.find(vendorName);
 
-    if(v_it != vendor_names_.end()) return ((*v_it).second);
+    if(it != vendor_names_.end()) return (it->second);
 
     return (nullptr);
 }
 
 const Avp * Dictionary::getAvp(const core::AvpId & avpId) const {
-    const_avp_iterator it = avps_.find(avpId);
+    auto it = avps_.find(avpId);
 
-    if(it != avp_end()) return ((const Avp *) & ((*it).second));
+    if(it != avps_.end()) return &(it->second);
 
     return (nullptr);
 }
 
 const Avp * Dictionary::getAvp(const std::string & avpName) const {
-    const_avpNames_iterator a_it = avp_names_.find(avpName);
+    auto it = avp_names_.find(avpName);
 
-    if(a_it != avp_names_.end()) return ((*a_it).second);
+    if(it != avp_names_.end()) return (it->second);
 
     return (nullptr);
 }
 
 const Command * Dictionary::getCommand(const core::CommandId & commandId) const {
-    const_command_iterator it = commands_.find(commandId);
+    auto it = commands_.find(commandId);
 
-    if(it != command_end()) return ((const Command *) & ((*it).second));
+    if(it != commands_.end()) return &(it->second);
 
     return (nullptr);
 }
 
 const Command * Dictionary::getCommand(const std::string & commandName) const {
-    const_commandNames_iterator c_it = command_names_.find(commandName);
+    auto it = command_names_.find(commandName);
 
-    if(c_it != command_names_.end()) return ((*c_it).second);
+    if(it != command_names_.end()) return (it->second);
 
     return (nullptr);
 }
@@ -224,33 +225,33 @@ nlohmann::json Dictionary::asJson(void) const {
     result["name"] = name_;
 
     // Formats
-    for(const_format_iterator it = format_begin(); it != format_end(); it++) {
-        if((*it).second.isReserved()) continue;
-        if((*it).second.isRFC6733()) continue;
-        result["format"].push_back((*it).second.asJson());
+    for(auto it: formats_) {
+        if(it.second.isReserved()) continue;
+        if(it.second.isRFC6733()) continue; // only user-defined formats are shown
+        result["format"].push_back(it.second.asJson());
     }
 
     // Vendors
-    for(const_vendor_iterator it = vendor_begin(); it != vendor_end(); it++)
-        result["vendor"].push_back((*it).second.asJson());
+    for(auto it: vendors_)
+        result["vendor"].push_back(it.second.asJson());
 
     // Avps
-    for(const_avp_iterator it = avp_begin(); it != avp_end(); it++) {
-        if((*it).second.getFormat()->isAny()) continue;  // Generic AVP not shown
+    for(auto it: avps_) {
+        if(it.second.getFormat()->isAny()) continue;  // Generic AVP not shown
 
-        result["avp"].push_back((*it).second.asJson());
+        result["avp"].push_back(it.second.asJson());
     }
 
     // Commands
-    for(const_command_iterator it = command_begin(); it != command_end(); it++)
-        result["command"].push_back((*it).second.asJson());
+    for(auto it: commands_)
+        result["command"].push_back(it.second.asJson());
 
     return result;
 }
 
 void Dictionary::extractFormats(const nlohmann::json &doc) {
     for(auto it: doc) {
-        Format aux;
+        Format aux(this); // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
         auto name_it = it.find("name");
@@ -267,7 +268,7 @@ void Dictionary::extractFormats(const nlohmann::json &doc) {
 
 void Dictionary::extractVendors(const nlohmann::json &doc) {
     for(auto it: doc) {
-        Vendor aux;
+        Vendor aux; // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
         auto name_it = it.find("name");
@@ -284,7 +285,7 @@ void Dictionary::extractVendors(const nlohmann::json &doc) {
 
 void Dictionary::extractAvps(const nlohmann::json &doc) {
     for(auto it: doc) {
-        Avp aux;
+        Avp aux(this); // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
         auto name_it = it.find("name");
@@ -292,22 +293,23 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
         auto code_it = it.find("code");
         auto vendor_name_it = it.find("vendor-name");
         core::S32 vendorCode = 0; /* IETF by default */
+        auto single_it = it.find("single");
+
+        // Optionals
         auto vbit_it = it.find("v-bit");
         auto mbit_it = it.find("m-bit");
-        auto single_it = it.find("single");
-        //auto grouped_it = it.find("grouped");
 
         // Vendor ?
         if (vendor_name_it != it.end()) {
             std::string c_name = *vendor_name_it;
-            aux.setVendorName(c_name);
-            const_vendorNames_iterator v_it = vendor_names_.find(c_name);
+            auto v_it = vendor_names_.find(c_name);
 
             if(v_it == vendor_names_.end()) {
                 std::string s_ex = ert::tracing::Logger::asString("Vendor '%s', referenced at '%s' avp definition, not found at xml", c_name, name.c_str());
                 throw std::runtime_error(s_ex);
             }
 
+            aux.setVendorName(c_name);
             vendorCode = ((*v_it).second)->getCode();
         }
 
@@ -357,11 +359,13 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
                 aux.setEnums(s_enum.c_str());
             }
 
-            for(auto l_it: *label_it) {
-                std::string data = *(l_it.find("data"));
-                std::string alias = *(l_it.find("alias"));
-                // Assignment:
-                aux.addLabel(data, alias);
+            if(label_it != (*single_it).end()) {
+                for(auto l_it: *label_it) {
+                    std::string data = *(l_it.find("data"));
+                    std::string alias = *(l_it.find("alias"));
+                    // Assignment:
+                    aux.addLabel(data, alias);
+                }
             }
         } else { // grouped
             // Assignments:
@@ -378,9 +382,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
         auto name_it = it.find("name");
         auto grouped_it = it.find("grouped");
 
-        if(grouped_it == it.end()) continue;
-
-        const_avpNames_iterator a_it = avp_names_.find(*name_it);
+        auto a_it = avp_names_.find(*name_it);
         Avp * gavp = (Avp *)((*a_it).second);
 
         if(!gavp) continue;  // it could be mising (a redefinition could have removed it)
@@ -389,11 +391,12 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 
         // Avprule updating:
         if(format->isGrouped()) { // double check
-            AvpRule auxAvpRule(this);
-            for(auto avprule_it: (*grouped_it)["avprule"]) {
-                std::string name = *(avprule_it.find("name"));
-                std::string type = *(avprule_it.find("type"));
-                auto qual_it = avprule_it.find("qual"); // optional
+            auto avprule_it = grouped_it->find("avprule");
+            AvpRule auxAvpRule(this); // set everything below (even empty, zeroed, etc.) to avoid reset() function
+            for(auto it: *avprule_it) {
+                std::string name = *(it.find("name"));
+                std::string type = *(it.find("type"));
+                auto qual_it = it.find("qual"); // optional
 
                 const Avp * avp = getAvp(name);
                 if(avp == nullptr) {
@@ -403,7 +406,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 
                 auxAvpRule.setAvpId(avp->getId());
                 auxAvpRule.setPresence(AvpRule::Presence::asEnum(type));
-                auxAvpRule.setQual((qual_it != avprule_it.end()) ? *qual_it : "");
+                auxAvpRule.setQual((qual_it != it.end()) ? *qual_it:"");
                 gavp->addAvpRule(auxAvpRule);
             }
         }
@@ -439,12 +442,12 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
     //            D
     //            A -> loop !!
     //
-    for(const_avp_iterator it = avp_begin(); it != avp_end(); it++) {
+    for(auto it = avps_.begin(); it != avps_.end(); it++) {
         const Avp & avp = (*it).second;
 
         if(!((avp.getFormat())->isGrouped())) continue;
 
-        for(const_avp_iterator it_p = avp_begin(); it_p != avp_end(); it_p++) {
+        for(auto it_p = avps_.begin(); it_p != avps_.end(); it_p++) {
             const Avp & avp_p = (*it_p).second;
 
             if(!((avp_p.getFormat())->isGrouped())) continue;
@@ -468,24 +471,30 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 
 void Dictionary::extractCommands(const nlohmann::json &doc) {
     for(auto it: doc) {
-        Command aux;
+        Command aux; // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
         auto name_it = it.find("name");
         auto code_it = it.find("code");
+        auto avprule_it = it.find("avprule");
+
+        // Optionals
+        auto appid_it = it.find("application-id");
         auto rbit_it = it.find("r-bit");
-        auto avprule_it = doc.find("avprule");
+        auto pbit_it = it.find("p-bit");
 
         // Assignments:
         aux.setName(*name_it);
         aux.setCode(*code_it);
-        aux.setRequest(*rbit_it);
+        aux.setApplicationId((appid_it!=it.end()) ? core::U32(*appid_it) : 0);
+        aux.setRequest((rbit_it!=it.end()) ? bool(*rbit_it) : false);
+        aux.setPbit((pbit_it!=it.end()) ? bool(*pbit_it) : false);
 
-        AvpRule auxAvpRule(this);
-        for(auto avprule_it: *avprule_it) {
-            std::string name = *(avprule_it.find("name"));
-            std::string type = *(avprule_it.find("type"));
-            auto qual_it = avprule_it.find("qual"); // optional
+        AvpRule auxAvpRule(this); // set everything below (even empty, zeroed, etc.) to avoid reset() function
+        for(auto it: *avprule_it) {
+            std::string name = *(it.find("name"));
+            std::string type = *(it.find("type"));
+            auto qual_it = it.find("qual"); // optional
 
             const Avp * avp = getAvp(name);
             if(avp == nullptr) {
@@ -495,7 +504,7 @@ void Dictionary::extractCommands(const nlohmann::json &doc) {
 
             auxAvpRule.setAvpId(avp->getId());
             auxAvpRule.setPresence(AvpRule::Presence::asEnum(type));
-            auxAvpRule.setQual((qual_it != avprule_it.end()) ? *qual_it : "");
+            auxAvpRule.setQual((qual_it != it.end()) ? *qual_it:"");
             aux.addAvpRule(auxAvpRule);
         }
 
@@ -510,19 +519,25 @@ void Dictionary::load(const nlohmann::json &json) {
     auto name_it = json.find("name");
     name_ = *name_it;
 
-    auto vendors_it = json.find("vendor");
-    extractVendors(*vendors_it);
-
-    auto avps_it = json.find("avp");
-    extractAvps(*avps_it);
-
-    auto commands_it = json.find("command");
-    extractCommands(*commands_it);
-
     // Optional
     auto formats_it = json.find("format");
     if (formats_it != json.end() && formats_it->is_array()) {
         extractFormats(*formats_it);
+    }
+
+    auto vendors_it = json.find("vendor");
+    if (vendors_it != json.end() && vendors_it->is_array()) {
+        extractVendors(*vendors_it);
+    }
+
+    auto avps_it = json.find("avp");
+    if (avps_it != json.end() && avps_it->is_array()) {
+        extractAvps(*avps_it);
+    }
+
+    auto commands_it = json.find("command");
+    if (commands_it != json.end() && commands_it->is_array()) {
+        extractCommands(*commands_it);
     }
 }
 

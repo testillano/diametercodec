@@ -69,8 +69,7 @@ const nlohmann::json diccionary = R"(
           "parent-type": { "type": "string", "enum": [ "OctetString", "Integer32", "Integer64", "Unsigned32", "Unsigned64", "Float32", "Float64", "Grouped", "Address", "Time", "UTF8String", "DiameterIdentity", "DiameterURI", "Enumerated", "IPFilterRule" ] }
         },
         "required": [
-          "name",
-          "parent-type"
+          "name"
         ]
       }
     },
@@ -145,9 +144,7 @@ const nlohmann::json diccionary = R"(
         },
         "required": [
           "name",
-          "code",
-          "v-bit",
-          "m-bit"
+          "code"
         ],
         "oneOf": [
           { "required": [ "single" ] },
@@ -162,7 +159,7 @@ const nlohmann::json diccionary = R"(
         "properties": {
           "name": { "type": "string" },
           "code": { "type": "integer", "minimum": 0, "maximum": 16777215 },
-          "application-id": { "type": "string" },
+          "application-id": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
           "avprule": {
             "type": "array",
             "items": {
@@ -184,17 +181,13 @@ const nlohmann::json diccionary = R"(
         "required": [
           "name",
           "code",
-          "r-bit",
           "avprule"
         ]
       }
     }
   },
   "required": [
-    "name",
-    "vendor",
-    "avp",
-    "command"
+    "name"
   ]
 }
 )"_json;
@@ -235,7 +228,7 @@ const nlohmann::json message = R"(
         },
         {
           "type": "object",
-          "required": ["code", "v-bit", "m-bit", "vendor", "data"],
+          "required": ["code", "vendor", "data"],
           "properties": {
             "code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
             "v-bit": { "type": "boolean" },
@@ -247,7 +240,7 @@ const nlohmann::json message = R"(
         },
         {
           "type": "object",
-          "required": ["code", "v-bit", "m-bit", "vendor", "hex-data"],
+          "required": ["code", "vendor", "hex-data"],
           "properties": {
             "code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
             "v-bit": { "type": "boolean" },
@@ -258,7 +251,7 @@ const nlohmann::json message = R"(
         },
         {
           "type": "object",
-          "required": ["code", "v-bit", "m-bit", "vendor", "avp"],
+          "required": ["code", "vendor", "avp"],
           "properties": {
             "code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
             "v-bit": { "type": "boolean" },
@@ -301,7 +294,7 @@ const nlohmann::json message = R"(
           "items": { "$ref": "#/definitions/avpObject" }
         }
       },
-      "required": ["version", "application-id", "code", "r-bit", "p-bit", "e-bit", "t-bit", "avp"]
+      "required": ["version", "code", "avp"]
     }
   },
   "oneOf": [

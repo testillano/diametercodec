@@ -67,10 +67,7 @@ class Dictionary {
 public:
 
     typedef std::map<std::string, Format> format_container;
-    typedef format_container::const_iterator const_format_iterator;
-
     typedef std::map<core::S32, Vendor> vendor_container;
-    typedef vendor_container::const_iterator const_vendor_iterator;
 
     struct lessAvp { // order by vendor id
         bool operator()(core::AvpId id1, core::AvpId id2) const {
@@ -80,7 +77,6 @@ public:
         }
     };
     typedef std::map<core::AvpId, Avp, lessAvp> avp_container;
-    typedef avp_container::const_iterator const_avp_iterator;
 
 
     struct lessCommand {
@@ -95,7 +91,6 @@ public:
         }
     };
     typedef std::map<core::CommandId, Command, lessCommand> command_container;
-    typedef command_container::const_iterator const_command_iterator;
 
 private:
 
@@ -107,13 +102,8 @@ private:
 
     // Name identifiers:
     typedef std::map<std::string, const Vendor *> vendorNames_container;
-    typedef vendorNames_container::const_iterator const_vendorNames_iterator;
-
     typedef std::map<std::string, const Avp *> avpNames_container;
-    typedef avpNames_container::const_iterator const_avpNames_iterator;
-
     typedef std::map<std::string, const Command *> commandNames_container;
-    typedef commandNames_container::const_iterator const_commandNames_iterator;
 
     vendorNames_container vendor_names_;
     avpNames_container avp_names_;
@@ -153,47 +143,6 @@ public:
     void addVendor(const Vendor &);
     void addAvp(const Avp &);
     void addCommand(const Command &);
-
-    // containers
-    const_format_iterator format_begin() const {
-        return formats_.begin();
-    }
-    const_format_iterator format_end() const {
-        return formats_.end();
-    }
-    int format_size() const {
-        return formats_.size();
-    }
-
-    const_vendor_iterator vendor_begin() const {
-        return vendors_.begin();
-    }
-    const_vendor_iterator vendor_end() const {
-        return vendors_.end();
-    }
-    int vendor_size() const {
-        return vendors_.size();
-    }
-
-    const_avp_iterator avp_begin() const {
-        return avps_.begin();
-    }
-    const_avp_iterator avp_end() const {
-        return avps_.end();
-    }
-    int avp_size() const {
-        return avps_.size();
-    }
-
-    const_command_iterator command_begin() const {
-        return commands_.begin();
-    }
-    const_command_iterator command_end() const {
-        return commands_.end();
-    }
-    int command_size() const {
-        return commands_.size();
-    }
 
     // helpers
     nlohmann::json asJson() const ;

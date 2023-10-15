@@ -47,6 +47,8 @@ SOFTWARE.
 #include <string>
 
 // Project
+#include <ert/diametercodec/json/stacks.hpp>
+#include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/tracing/Logger.hpp>
 
 
@@ -69,11 +71,15 @@ int main(int argc, char* argv[]) {
     progname = basename(argv[0]);
     ert::tracing::Logger::initialize(progname);
     ert::tracing::Logger::verbose();
+    ert::tracing::Logger::setLevel("Debug");
 
     // Capture TERM/INT signals for graceful exit:
     signal(SIGTERM, sighndl);
     signal(SIGINT, sighndl);
 
+    ert::diametercodec::stack::Dictionary dictionary;
+    dictionary.load(ert::diametercodec::json::stacks::base);
+    std::cout << dictionary.asJson().dump(2) << std::endl;
 
     return 0;
 }
