@@ -49,25 +49,12 @@ namespace diametercodec
 namespace core
 {
 
-std::string functions::avpIdAsPairString(const AvpId & avpId) {
-    std::string result;
-    result = "(";
-    result += std::to_string(avpId.first);
-    result += ",";
-    result += std::to_string(avpId.second);
-    result += ")";
-    return (result);
+std::string functions::avpIdAsPairString(const AvpId &avpId) {
+    return "(" + std::to_string(avpId.first) + "," + std::to_string(avpId.second) + ")";
 }
 
-
 std::string functions::commandIdAsPairString(const CommandId & commandId) {
-    std::string result;
-    result = "(";
-    result += std::to_string(commandId.first);
-    result += ",";
-    result += (commandId.second ? "request" : "answer");
-    result += ")";
-    return (result);
+    return "(" + std::to_string(commandId.first) + "," + (commandId.second ? "request" : "answer") + ")";
 }
 
 }

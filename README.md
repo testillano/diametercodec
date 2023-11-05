@@ -158,6 +158,36 @@ $ make install
 $ cat install_manifest.txt | sudo xargs rm
 ```
 
+## Testing
+
+### Unit test
+
+Check the badge above to know the current coverage level.
+You can execute it after project building, for example for `Release` target:
+
+```bash
+$> build/Release/bin/unit-test # native executable
+- or -
+$> docker run -it --rm -v ${PWD}/build/Release/bin/unit-test:/ut --entrypoint "/ut" ghcr.io/testillano/diametercodec:latest # docker
+```
+
+To shortcut docker run execution, `./ut.sh` script at root directory can also be used.
+You may provide extra arguments to Google test executable, for example:
+
+```bash
+$> ./ut.sh --gtest_list_tests # to list the available tests
+$> ./ut.sh --gtest_filter=Avp_test.getId # to filter and run 1 specific test
+$> ./ut.sh --gtest_filter=Avp_test.* # to filter and run 1 specific suite
+etc.
+```
+
+#### Coverage
+
+Unit test coverage could be easily calculated executing the script `./tools/coverage.sh`. This script builds and runs an image based in `./Dockerfile.coverage` which uses the `lcov` utility behind. Finally, a `firefox` instance is launched showing the coverage report where you could navigate the source tree to check the current status of the project. This stage is also executed as part of `h2agent` continuous integration (`github workflow`).
+
+Both `ubuntu` and `alpine` base images are supported, but the official image uploaded is the one based in `ubuntu`.
+If you want to work with alpine-based images, you may build everything from scratch, including all docker base images which are project dependencies.
+
 ## Integration
 
 ### CMake

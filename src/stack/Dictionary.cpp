@@ -120,8 +120,8 @@ void Dictionary::initialize() {
     genericAvp.setVendorId(0/*Vendor::Code::Ietf*/);
     genericAvp.setName("AVP");
     genericAvp.setFormatName(Any.getName());
-    genericAvp.setVbit(false);
-    genericAvp.setMbit(false);
+    genericAvp.setVBit(false);
+    genericAvp.setMBit(false);
     addAvp(genericAvp);
 }
 
@@ -187,34 +187,34 @@ const Vendor * Dictionary::getVendor(const std::string & vendorName) const {
     return (nullptr);
 }
 
-const Avp * Dictionary::getAvp(const core::AvpId & avpId) const {
+Avp * Dictionary::getAvp(const core::AvpId & avpId) const {
     auto it = avps_.find(avpId);
 
-    if(it != avps_.end()) return &(it->second);
+    if(it != avps_.end()) return (Avp*)&(it->second);
 
     return (nullptr);
 }
 
-const Avp * Dictionary::getAvp(const std::string & avpName) const {
+Avp * Dictionary::getAvp(const std::string & avpName) const {
     auto it = avp_names_.find(avpName);
 
-    if(it != avp_names_.end()) return (it->second);
+    if(it != avp_names_.end()) return (Avp*)(it->second);
 
     return (nullptr);
 }
 
-const Command * Dictionary::getCommand(const core::CommandId & commandId) const {
+Command * Dictionary::getCommand(const core::CommandId & commandId) const {
     auto it = commands_.find(commandId);
 
-    if(it != commands_.end()) return &(it->second);
+    if(it != commands_.end()) return (Command*)&(it->second);
 
     return (nullptr);
 }
 
-const Command * Dictionary::getCommand(const std::string & commandName) const {
+Command * Dictionary::getCommand(const std::string & commandName) const {
     auto it = command_names_.find(commandName);
 
-    if(it != command_names_.end()) return (it->second);
+    if(it != command_names_.end()) return (Command*)(it->second);
 
     return (nullptr);
 }
@@ -317,8 +317,8 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
         aux.setCode(*code_it);
         aux.setVendorId(vendorCode);
         aux.setName(*name_it);
-        aux.setVbit((vbit_it!=it.end()) ? bool(*vbit_it) : false);
-        aux.setMbit((mbit_it!=it.end()) ? bool(*mbit_it) : false);
+        aux.setVBit((vbit_it!=it.end()) ? bool(*vbit_it) : false);
+        aux.setMBit((mbit_it!=it.end()) ? bool(*mbit_it) : false);
 
         // Check vendor specific bit:
         if(vendorCode && !aux.vBit()) {
@@ -400,7 +400,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 
                 const Avp * avp = getAvp(name);
                 if(avp == nullptr) {
-                    std::string s_ex = ert::tracing::Logger::asString("Avp '%s', referenced at avp rule definition, not found at xml", name.c_str());
+                    std::string s_ex = ert::tracing::Logger::asString("Avp '%s', referenced at avp rule definition within grouped '%s', not found at xml", name.c_str(), std::string(*name_it).c_str());
                     throw std::runtime_error(s_ex);
                 }
 
@@ -488,7 +488,7 @@ void Dictionary::extractCommands(const nlohmann::json &doc) {
         aux.setCode(*code_it);
         aux.setApplicationId((appid_it!=it.end()) ? core::U32(*appid_it) : 0);
         aux.setRequest((rbit_it!=it.end()) ? bool(*rbit_it) : false);
-        aux.setPbit((pbit_it!=it.end()) ? bool(*pbit_it) : false);
+        aux.setPBit((pbit_it!=it.end()) ? bool(*pbit_it) : false);
 
         AvpRule auxAvpRule(this); // set everything below (even empty, zeroed, etc.) to avoid reset() function
         for(auto it: *avprule_it) {

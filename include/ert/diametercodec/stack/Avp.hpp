@@ -139,7 +139,7 @@ public:
     const char * getEnums(void) const {
         return enums_.getLiteral().c_str();
     }
-    const char * getAlias(const std::string data) const {
+    const char * getAlias(const std::string &data) const {
         auto it = labels_.find(data);
         return ((it != labels_.end()) ? ((*it).second.c_str()) : nullptr);
     }
@@ -188,10 +188,10 @@ public:
     void setFormatName(const std::string & fn) {
         format_name_ = fn;
     }
-    void setVbit(bool b = true) {
+    void setVBit(bool b = true) {
         v_bit_ = b;
     }
-    void setMbit(bool b = true) {
+    void setMBit(bool b = true) {
         m_bit_ = b;
     }
 

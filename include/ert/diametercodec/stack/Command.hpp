@@ -128,7 +128,7 @@ public:
     void setRequest(bool r = true) {
         id_.second = r;
     }
-    void setPbit(bool b = true) {
+    void setPBit(bool b = true) {
         p_bit_ = b;
     }
     void setName(const std::string & n) {

@@ -14,7 +14,7 @@ public:
     ert::diametercodec::stack::AvpRule *avp_rule_{};
 
     AvpRule_test() {
-        //dictionary_.load(ert::diametercodec::json::stacks::base);
+        dictionary_.load(ert::diametercodec::json::stacks::base);
         avp_rule_ = new ert::diametercodec::stack::AvpRule(&dictionary_);
 
         ert::diametercodec::core::AvpId id(258,0);
@@ -24,10 +24,10 @@ public:
     }
 };
 
-//TEST_F(AvpRule_test, getAvpName)
-//{
-//    EXPECT_EQ(avp_rule_->getAvpName(), "Auth-Application-Id");
-//}
+TEST_F(AvpRule_test, getAvpName)
+{
+    EXPECT_EQ(avp_rule_->getAvpName(), "Auth-Application-Id");
+}
 
 TEST_F(AvpRule_test, getPresence)
 {
@@ -39,10 +39,10 @@ TEST_F(AvpRule_test, getQual)
     EXPECT_EQ(avp_rule_->getQual(), "1*");
 }
 
-//TEST_F(AvpRule_test, isAny)
-//{
-//    EXPECT_EQ(avp_rule_->isAny(), false);
-//}
+TEST_F(AvpRule_test, isAny)
+{
+    EXPECT_EQ(avp_rule_->isAny(), false);
+}
 
 TEST_F(AvpRule_test, isFixed)
 {
@@ -69,9 +69,9 @@ TEST_F(AvpRule_test, getQualMax)
     EXPECT_EQ(avp_rule_->getQualMax(), -1);
 }
 
-//TEST_F(AvpRule_test, asJson)
-//{
-//    const nlohmann::json doc = R"({ "type": "Fixed", "name": "Unit-Value"})"_json;
-//    EXPECT_EQ(avp_rule_->asJson(), doc);
-//}
+TEST_F(AvpRule_test, asJson)
+{
+    const nlohmann::json doc = R"({"name":"Auth-Application-Id","qual":"1*","type":"Optional"})"_json;
+    EXPECT_EQ(avp_rule_->asJson(), doc);
+}
 

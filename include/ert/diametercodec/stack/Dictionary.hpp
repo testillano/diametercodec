@@ -133,10 +133,10 @@ public:
     const Format * getFormat(const std::string & formatName) const;
     const Vendor * getVendor(core::S32 vendorId) const;
     const Vendor * getVendor(const std::string & vendorName) const;
-    const Avp * getAvp(const core::AvpId & avpId) const;
-    const Avp * getAvp(const std::string & avpName) const;
-    const Command * getCommand(const core::CommandId & commandId) const;
-    const Command * getCommand(const std::string & commandName) const;
+    Avp * getAvp(const core::AvpId & avpId) const;
+    Avp * getAvp(const std::string & avpName) const;
+    Command * getCommand(const core::CommandId & commandId) const;
+    Command * getCommand(const std::string & commandName) const;
 
     // set
     void addFormat(const Format &, bool reserved = false);
