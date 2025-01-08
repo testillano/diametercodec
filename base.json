@@ -1,0 +1,2618 @@
+{
+    "avp": [
+        {
+            "code": 1,
+            "m-bit": true,
+            "name": "User-Name",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 4,
+            "m-bit": true,
+            "name": "NAS-IP-Address",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 8,
+            "name": "Framed-IP-Address",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 11,
+            "name": "Filter-Id",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 25,
+            "m-bit": true,
+            "name": "Class",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 27,
+            "m-bit": true,
+            "name": "Session-Timeout",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 30,
+            "name": "Called-Station-Id",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 33,
+            "m-bit": true,
+            "name": "Proxy-State",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 44,
+            "m-bit": true,
+            "name": "Accounting-Session-Id",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 50,
+            "m-bit": true,
+            "name": "Acct-Multi-Session-Id",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 55,
+            "m-bit": true,
+            "name": "Event-Timestamp",
+            "single": {
+                "format": "Time"
+            }
+        },
+        {
+            "code": 85,
+            "m-bit": true,
+            "name": "Acct-Interim-Interval",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 97,
+            "name": "Framed-IPv6-Prefix",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 257,
+            "m-bit": true,
+            "name": "Host-IP-Address",
+            "single": {
+                "format": "Address"
+            }
+        },
+        {
+            "code": 258,
+            "m-bit": true,
+            "name": "Auth-Application-Id",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 259,
+            "m-bit": true,
+            "name": "Acct-Application-Id",
+            "single": {
+                "format": "Unsigned32",
+                "label": [
+                    {
+                        "alias": "ERICSSON_SCAP",
+                        "data": "19302"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 260,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Vendor-Id",
+                        "qual": "1*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Auth-Application-Id",
+                        "qual": "*1",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Acct-Application-Id",
+                        "qual": "*1",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Vendor-Specific-Application-Id"
+        },
+        {
+            "code": 261,
+            "m-bit": true,
+            "name": "Redirect-Host-Usage",
+            "single": {
+                "enum": "0-6",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "DONT_CACHE",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "ALL_SESSION",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "ALL_REALM",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "REALM_AND_APPLICATION",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "ALL_APPLICATION",
+                        "data": "4"
+                    },
+                    {
+                        "alias": "ALL_HOST",
+                        "data": "5"
+                    },
+                    {
+                        "alias": "ALL_USER",
+                        "data": "6"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 262,
+            "m-bit": true,
+            "name": "Redirect-Max-Cache-Time",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 263,
+            "m-bit": true,
+            "name": "Session-Id",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 264,
+            "m-bit": true,
+            "name": "Origin-Host",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 265,
+            "m-bit": true,
+            "name": "Supported-Vendor-Id",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 266,
+            "m-bit": true,
+            "name": "Vendor-Id",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 267,
+            "name": "Firmware-Revision",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 268,
+            "m-bit": true,
+            "name": "Result-Code",
+            "single": {
+                "format": "Unsigned32",
+                "label": [
+                    {
+                        "alias": "DIAMETER_MULTI_ROUND_AUTH",
+                        "data": "1001"
+                    },
+                    {
+                        "alias": "DIAMETER_SUCCESS",
+                        "data": "2001"
+                    },
+                    {
+                        "alias": "DIAMETER_LIMITED_SUCCESS",
+                        "data": "2002"
+                    },
+                    {
+                        "alias": "DIAMETER_COMMAND_UNSUPPORTED",
+                        "data": "3001"
+                    },
+                    {
+                        "alias": "DIAMETER_UNABLE_TO_DELIVER",
+                        "data": "3002"
+                    },
+                    {
+                        "alias": "DIAMETER_REALM_NOT_SERVED",
+                        "data": "3003"
+                    },
+                    {
+                        "alias": "DIAMETER_TOO_BUSY",
+                        "data": "3004"
+                    },
+                    {
+                        "alias": "DIAMETER_LOOP_DETECTED",
+                        "data": "3005"
+                    },
+                    {
+                        "alias": "DIAMETER_REDIRECT_INDICATION",
+                        "data": "3006"
+                    },
+                    {
+                        "alias": "DIAMETER_APPLICATION_UNSUPPORTED",
+                        "data": "3007"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_HDR_BITS",
+                        "data": "3008"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_AVP_BITS",
+                        "data": "3009"
+                    },
+                    {
+                        "alias": "DIAMETER_UNKNOWN_PEER",
+                        "data": "3010"
+                    },
+                    {
+                        "alias": "DIAMETER_AUTHENTICATION_REJECTED",
+                        "data": "4001"
+                    },
+                    {
+                        "alias": "DIAMETER_OUT_OF_SPACE",
+                        "data": "4002"
+                    },
+                    {
+                        "alias": "ELECTION_LOST",
+                        "data": "4003"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_MIP_REPLY_FAILURE",
+                        "data": "4005"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_HA_NOT_AVAILABLE",
+                        "data": "4006"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_BAD_KEY",
+                        "data": "4007"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_MIP_FILTER_NOT_SUPPORTED",
+                        "data": "4008"
+                    },
+                    {
+                        "alias": "DIAMETER_END_USER_SERVICE_DENIED",
+                        "data": "4010"
+                    },
+                    {
+                        "alias": "DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE",
+                        "data": "4011"
+                    },
+                    {
+                        "alias": "DIAMETER_CREDIT_LIMIT_REACHED",
+                        "data": "4012"
+                    },
+                    {
+                        "alias": "DIAMETER_END_USER_SERVICE_DENIED",
+                        "data": "4241"
+                    },
+                    {
+                        "alias": "DIAMETER_AVP_UNSUPPORTED",
+                        "data": "5001"
+                    },
+                    {
+                        "alias": "DIAMETER_UNKNOWN_SESSION_ID",
+                        "data": "5002"
+                    },
+                    {
+                        "alias": "DIAMETER_AUTHORIZATION_REJECTED",
+                        "data": "5003"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_AVP_VALUE",
+                        "data": "5004"
+                    },
+                    {
+                        "alias": "DIAMETER_MISSING_AVP",
+                        "data": "5005"
+                    },
+                    {
+                        "alias": "DIAMETER_RESOURCES_EXCEEDED",
+                        "data": "5006"
+                    },
+                    {
+                        "alias": "DIAMETER_CONTRADICTING_AVPS",
+                        "data": "5007"
+                    },
+                    {
+                        "alias": "DIAMETER_AVP_NOT_ALLOWED",
+                        "data": "5008"
+                    },
+                    {
+                        "alias": "DIAMETER_AVP_OCCURS_TOO_MANY_TIMES",
+                        "data": "5009"
+                    },
+                    {
+                        "alias": "DIAMETER_NO_COMMON_APPLICATION",
+                        "data": "5010"
+                    },
+                    {
+                        "alias": "DIAMETER_UNSUPPORTED_VERSION",
+                        "data": "5011"
+                    },
+                    {
+                        "alias": "DIAMETER_UNABLE_TO_COMPLY",
+                        "data": "5012"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_BIT_IN_HEADER",
+                        "data": "5013"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_AVP_LENGTH",
+                        "data": "5014"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_MESSAGE_LENGTH",
+                        "data": "5015"
+                    },
+                    {
+                        "alias": "DIAMETER_INVALID_AVP_BIT_COMBO",
+                        "data": "5016"
+                    },
+                    {
+                        "alias": "DIAMETER_NO_COMMON_SECURITY",
+                        "data": "5017"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_NO_FOREIGN_HA_SERVICE",
+                        "data": "5024"
+                    },
+                    {
+                        "alias": "DIAMETER_ERROR_END_TO_END_MIP_KEY_ENCRYPTION",
+                        "data": "5025"
+                    },
+                    {
+                        "alias": "DIAMETER_USER_UNKNOWN",
+                        "data": "5030"
+                    },
+                    {
+                        "alias": "DIAMETER_RATING_FAILED",
+                        "data": "5031"
+                    },
+                    {
+                        "alias": "REQUESTED_SERVICE_NOT_AUTHORIZED",
+                        "data": "5063"
+                    },
+                    {
+                        "alias": "IP_CAN_SESSION_NOT_AVAILABLE",
+                        "data": "5065"
+                    },
+                    {
+                        "alias": "DIAMETER_END_USER_NOT_FOUND",
+                        "data": "5241"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 269,
+            "name": "Product-Name",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 270,
+            "m-bit": true,
+            "name": "Session-Binding",
+            "single": {
+                "format": "Unsigned32",
+                "label": [
+                    {
+                        "alias": "RE_AUTH",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "STR",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "ACCOUNTING",
+                        "data": "4"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 271,
+            "m-bit": true,
+            "name": "Session-Server-Failover",
+            "single": {
+                "enum": "0-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "REFUSE_SERVICE",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "TRY_AGAIN",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "ALLOW_SERVICE",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "TRY_AGAIN_ALLOW_SERVICE",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 272,
+            "m-bit": true,
+            "name": "Multi-Round-Time-Out",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 273,
+            "m-bit": true,
+            "name": "Disconnect-Cause",
+            "single": {
+                "enum": "0-2",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "REBOOTING",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "BUSY",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "DO_NOT_WANT_TO_TALK_TO_YOU",
+                        "data": "2"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 274,
+            "m-bit": true,
+            "name": "Auth-Request-Type",
+            "single": {
+                "enum": "0-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "RESERVED",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "AUTHENTICATE_ONLY",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "AUTHORIZE_ONLY",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "AUTHORIZE_AUTHENTICATE",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 276,
+            "m-bit": true,
+            "name": "Auth-Grace-Period",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 277,
+            "m-bit": true,
+            "name": "Auth-Session-State",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "STATE_MAINTAINED",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "NO_STATE_MAINTAINED",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 278,
+            "m-bit": true,
+            "name": "Origin-State-Id",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 279,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "AVP",
+                        "qual": "1*",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Failed-AVP"
+        },
+        {
+            "code": 280,
+            "m-bit": true,
+            "name": "Proxy-Host",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 281,
+            "name": "Error-Message",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 282,
+            "m-bit": true,
+            "name": "Route-Record",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 283,
+            "m-bit": true,
+            "name": "Destination-Realm",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 284,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Proxy-Host",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Proxy-State",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Proxy-Info"
+        },
+        {
+            "code": 285,
+            "m-bit": true,
+            "name": "Re-Auth-Request-Type",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "AUTHORIZE_ONLY",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "AUTHORIZE_AUTHENTICATE",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 287,
+            "m-bit": true,
+            "name": "Accounting-Sub-Session-Id",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 291,
+            "m-bit": true,
+            "name": "Authorization-Lifetime",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 292,
+            "m-bit": true,
+            "name": "Redirect-Host",
+            "single": {
+                "format": "DiameterURI"
+            }
+        },
+        {
+            "code": 293,
+            "m-bit": true,
+            "name": "Destination-Host",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 294,
+            "name": "Error-Reporting-Host",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 295,
+            "m-bit": true,
+            "name": "Termination-Cause",
+            "single": {
+                "enum": "1-8",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "DIAMETER_LOGOUT",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "DIAMETER_SERVICE_NOT_PROVIDED",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "DIAMETER_BAD_ANSWER",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "DIAMETER_ADMINISTRATIVE",
+                        "data": "4"
+                    },
+                    {
+                        "alias": "DIAMETER_LINK_BROKEN",
+                        "data": "5"
+                    },
+                    {
+                        "alias": "DIAMETER_AUTH_EXPIRED",
+                        "data": "6"
+                    },
+                    {
+                        "alias": "DIAMETER_USER_MOVED",
+                        "data": "7"
+                    },
+                    {
+                        "alias": "DIAMETER_SESSION_TIMEOUT",
+                        "data": "8"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 296,
+            "m-bit": true,
+            "name": "Origin-Realm",
+            "single": {
+                "format": "DiameterIdentity"
+            }
+        },
+        {
+            "code": 297,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Vendor-Id",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Experimental-Result-Code",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Experimental-Result"
+        },
+        {
+            "code": 298,
+            "m-bit": true,
+            "name": "Experimental-Result-Code",
+            "single": {
+                "format": "Unsigned32",
+                "label": [
+                    {
+                        "alias": "INVALID_SERVICE_INFORMATION",
+                        "data": "5061"
+                    },
+                    {
+                        "alias": "FILTER_RESTRICTIONS",
+                        "data": "5062"
+                    },
+                    {
+                        "alias": "REQUESTED_SERVICE_NOT_AUTHORIZED",
+                        "data": "5063"
+                    },
+                    {
+                        "alias": "DUPLICATED_AF_SESSION",
+                        "data": "5064"
+                    },
+                    {
+                        "alias": "IP-CAN_SESSION_NOT_AVAILABLE",
+                        "data": "5065"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 299,
+            "m-bit": true,
+            "name": "Inband-Security-Id",
+            "single": {
+                "format": "Unsigned32",
+                "label": [
+                    {
+                        "alias": "NO_INBAND_SECURITY",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "TLS",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 300,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "E2E-Sequence-AVP"
+        },
+        {
+            "code": 411,
+            "m-bit": true,
+            "name": "CC-Correlation-Id",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 412,
+            "m-bit": true,
+            "name": "CC-Input-Octets",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 413,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Unit-Value",
+                        "type": "Fixed"
+                    },
+                    {
+                        "name": "Currency-Code",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "CC-Money"
+        },
+        {
+            "code": 414,
+            "m-bit": true,
+            "name": "CC-Output-Octets",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 415,
+            "m-bit": true,
+            "name": "CC-Request-Number",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 416,
+            "m-bit": true,
+            "name": "CC-Request-Type",
+            "single": {
+                "enum": "1-4",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "INITIAL_REQUEST",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "UPDATE_REQUEST",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "TERMINATION_REQUEST",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "EVENT_REQUEST",
+                        "data": "4"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 417,
+            "m-bit": true,
+            "name": "CC-Service-Specific-Units",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 418,
+            "m-bit": true,
+            "name": "CC-Session-Failover",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "FAILOVER_NOT_SUPPORTED",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "FAILOVER_SUPPORTED",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 419,
+            "m-bit": true,
+            "name": "CC-Sub-Session-Id",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 420,
+            "m-bit": true,
+            "name": "CC-Time",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 421,
+            "m-bit": true,
+            "name": "CC-Total-Octets",
+            "single": {
+                "format": "Unsigned64"
+            }
+        },
+        {
+            "code": 422,
+            "m-bit": true,
+            "name": "Check-Balance-Result",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "ENOUGH_CREDIT",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "NO_CREDIT",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 423,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Unit-Value",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Currency-Code",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Cost-Unit",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Cost-Information"
+        },
+        {
+            "code": 424,
+            "m-bit": true,
+            "name": "Cost-Unit",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 425,
+            "m-bit": true,
+            "name": "Currency-Code",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 426,
+            "m-bit": true,
+            "name": "Credit-Control",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "CREDIT_AUTHORIZATION",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "RE_AUTHORIZATION",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 427,
+            "m-bit": true,
+            "name": "Credit-Control-Failure-Handling",
+            "single": {
+                "enum": "0-2",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "TERMINATE",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "CONTINUE",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "RETRY_AND_TERMINATE",
+                        "data": "2"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 428,
+            "m-bit": true,
+            "name": "Direct-Debiting-Failure-Handling",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "TERMINATE_OR_BUFFER",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "CONTINUE",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 429,
+            "m-bit": true,
+            "name": "Exponent",
+            "single": {
+                "format": "Integer32"
+            }
+        },
+        {
+            "code": 430,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Final-Unit-Action",
+                        "type": "Fixed"
+                    },
+                    {
+                        "name": "Restriction-Filter-Rule",
+                        "qual": "*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Filter-Id",
+                        "qual": "*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Redirect-Server",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Final-Unit-Indication"
+        },
+        {
+            "code": 431,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Tariff-Time-Change",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Time",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Money",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Total-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Input-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Output-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Service-Specific-Units",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Granted-Service-Unit"
+        },
+        {
+            "code": 432,
+            "m-bit": true,
+            "name": "Rating-Group",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 433,
+            "m-bit": true,
+            "name": "Redirect-Address-Type",
+            "single": {
+                "enum": "0-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "IPv4_Address",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "IPv6_Address",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "URL",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "SIP_URL",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 434,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Redirect-Address-Type",
+                        "type": "Fixed"
+                    },
+                    {
+                        "name": "Redirect-Server-Address",
+                        "type": "Fixed"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Redirect-Server"
+        },
+        {
+            "code": 435,
+            "m-bit": true,
+            "name": "Redirect-Server-Address",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 436,
+            "m-bit": true,
+            "name": "Requested-Action",
+            "single": {
+                "enum": "0-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "DIRECT_DEBITING",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "REFUND_ACCOUNT",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "CHECK_BALANCE",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "PRICE_ENQUIRY",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 437,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "CC-Time",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Money",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Total-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Input-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Output-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Service-Specific-Units",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Requested-Service-Unit"
+        },
+        {
+            "code": 438,
+            "m-bit": true,
+            "name": "Restriction-Filter-Rule",
+            "single": {
+                "format": "IPFilterRule"
+            }
+        },
+        {
+            "code": 439,
+            "m-bit": true,
+            "name": "Service-Identifier",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 440,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Service-Parameter-Type",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Service-Parameter-Value",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Service-Parameter-Info"
+        },
+        {
+            "code": 441,
+            "m-bit": true,
+            "name": "Service-Parameter-Type",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 442,
+            "m-bit": true,
+            "name": "Service-Parameter-Value",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 443,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Subscription-Id-Type",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Subscription-Id-Data",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Subscription-Id"
+        },
+        {
+            "code": 444,
+            "m-bit": true,
+            "name": "Subscription-Id-Data",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 445,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Value-Digits",
+                        "type": "Fixed"
+                    },
+                    {
+                        "name": "Exponent",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Unit-Value"
+        },
+        {
+            "code": 446,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Tariff-Change-Usage",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Time",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Money",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Total-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Input-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Output-Octets",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "CC-Service-Specific-Units",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Used-Service-Unit"
+        },
+        {
+            "code": 447,
+            "m-bit": true,
+            "name": "Value-Digits",
+            "single": {
+                "format": "Integer64"
+            }
+        },
+        {
+            "code": 448,
+            "m-bit": true,
+            "name": "Validity-Time",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 449,
+            "m-bit": true,
+            "name": "Final-Unit-Action",
+            "single": {
+                "enum": "0-2",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "TERMINATE",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "REDIRECT",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "RESTRICT_ACCESS",
+                        "data": "2"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 450,
+            "m-bit": true,
+            "name": "Subscription-Id-Type",
+            "single": {
+                "enum": "0-4",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "END_USER_E164",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "END_USER_IMSI",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "END_USER_SIP_URL",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "END_USER_NAI",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "END_USER_PRIVATE",
+                        "data": "4"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 451,
+            "m-bit": true,
+            "name": "Tariff-Time-Change",
+            "single": {
+                "format": "Time"
+            }
+        },
+        {
+            "code": 452,
+            "m-bit": true,
+            "name": "Tariff-Change-Usage",
+            "single": {
+                "enum": "0-2",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "UNIT_BEFORE_TARIFF_CHANGE",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "UNIT_AFTER_TARIFF_CHANGE",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "UNIT_INDETERMINATE",
+                        "data": "2"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 453,
+            "m-bit": true,
+            "name": "G-S-U-Pool-Identifier",
+            "single": {
+                "format": "Unsigned32"
+            }
+        },
+        {
+            "code": 454,
+            "m-bit": true,
+            "name": "CC-Unit-Type",
+            "single": {
+                "enum": "0-5",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "TIME",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "MONEY",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "TOTAL_OCTETS",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "INPUT_OCTETS",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "OUTPUT_OCTETS",
+                        "data": "4"
+                    },
+                    {
+                        "alias": "SERVICE_SPECIFIC_UNITS",
+                        "data": "5"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 455,
+            "m-bit": true,
+            "name": "Multiple-Services-Indicator",
+            "single": {
+                "enum": "0-1",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "MULTIPLE_SERVICES_NOT_SUPPORTED",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "MULTIPLE_SERVICES_SUPPORTED",
+                        "data": "1"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 456,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "Granted-Service-Unit",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Requested-Service-Unit",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Used-Service-Unit",
+                        "qual": "*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Tariff-Change-Usage",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Service-Identifier",
+                        "qual": "*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Rating-Group",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "G-S-U-Pool-Reference",
+                        "qual": "*",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Validity-Time",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Result-Code",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "Final-Unit-Indication",
+                        "type": "Optional"
+                    },
+                    {
+                        "name": "AVP",
+                        "qual": "*",
+                        "type": "Optional"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "Multiple-Services-Credit-Control"
+        },
+        {
+            "code": 457,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "G-S-U-Pool-Identifier",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "CC-Unit-Type",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "Unit-Value",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "G-S-U-Pool-Reference"
+        },
+        {
+            "code": 458,
+            "grouped": {
+                "avprule": [
+                    {
+                        "name": "User-Equipment-Info-Type",
+                        "type": "Mandatory"
+                    },
+                    {
+                        "name": "User-Equipment-Info-Value",
+                        "type": "Mandatory"
+                    }
+                ]
+            },
+            "m-bit": true,
+            "name": "User-Equipment-Info"
+        },
+        {
+            "code": 459,
+            "m-bit": true,
+            "name": "User-Equipment-Info-Type",
+            "single": {
+                "enum": "0-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "IMEISV",
+                        "data": "0"
+                    },
+                    {
+                        "alias": "MAC",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "EUI64",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "MODIFIED_EUI64",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 460,
+            "m-bit": true,
+            "name": "User-Equipment-Info-Value",
+            "single": {
+                "format": "OctetString"
+            }
+        },
+        {
+            "code": 461,
+            "m-bit": true,
+            "name": "Service-Context-Id",
+            "single": {
+                "format": "UTF8String"
+            }
+        },
+        {
+            "code": 480,
+            "m-bit": true,
+            "name": "Accounting-Record-Type",
+            "single": {
+                "enum": "1-4",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "EVENT_RECORD",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "START_RECORD",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "INTERIM_RECORD",
+                        "data": "3"
+                    },
+                    {
+                        "alias": "STOP_RECORD",
+                        "data": "4"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 482,
+            "m-bit": true,
+            "name": "Accounting-Interim-Interval",
+            "single": {
+                "format": "Integer32"
+            }
+        },
+        {
+            "code": 483,
+            "m-bit": true,
+            "name": "Accounting-Realtime-Required",
+            "single": {
+                "enum": "1-3",
+                "format": "Enumerated",
+                "label": [
+                    {
+                        "alias": "DELIVER_AND_GRANT",
+                        "data": "1"
+                    },
+                    {
+                        "alias": "GRANT_AND_STORE",
+                        "data": "2"
+                    },
+                    {
+                        "alias": "GRANT_AND_LOSE",
+                        "data": "3"
+                    }
+                ]
+            }
+        },
+        {
+            "code": 485,
+            "m-bit": true,
+            "name": "Accounting-Record-Number",
+            "single": {
+                "format": "Unsigned32"
+            }
+        }
+    ],
+    "command": [
+        {
+            "avprule": [
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Host-IP-Address",
+                    "qual": "1*",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Vendor-Id",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Product-Name",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Supported-Vendor-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Auth-Application-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Inband-Security-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Application-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Vendor-Specific-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Firmware-Revision",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 257,
+            "name": "Capabilities-Exchange-Request",
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Host-IP-Address",
+                    "qual": "1*",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Vendor-Id",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Product-Name",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Supported-Vendor-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Auth-Application-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Inband-Security-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Application-Id",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Vendor-Specific-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Firmware-Revision",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 257,
+            "name": "Capabilities-Exchange-Answer"
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Auth-Application-Id",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Re-Auth-Request-Type",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Route-Record",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 258,
+            "name": "Re-Auth-Request",
+            "p-bit": true,
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Reporting-Host",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host-Usage",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Max-Cache-Time",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 258,
+            "name": "Re-Auth-Answer",
+            "p-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Accounting-Record-Type",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Accounting-Record-Number",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Acct-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Vendor-Specific-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Sub-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Multi-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Interim-Interval",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Realtime-Required",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Event-Timestamp",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Route-Record",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 271,
+            "name": "Accounting-Request",
+            "p-bit": true,
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Accounting-Record-Type",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Accounting-Record-Number",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Acct-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Vendor-Specific-Application-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Sub-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Multi-Session-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Reporting-Host",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Acct-Interim-Interval",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Accounting-Realtime-Required",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Event-Timestamp",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 271,
+            "name": "Accounting-Answer",
+            "p-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Auth-Application-Id",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Route-Record",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 274,
+            "name": "Abort-Session-Request",
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Reporting-Host",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host-Usage",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Max-Cache-Time",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 274,
+            "name": "Abort-Session-Answer",
+            "p-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Destination-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Auth-Application-Id",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Termination-Cause",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Destination-Host",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Class",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Route-Record",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 275,
+            "name": "Session-Termination-Request",
+            "p-bit": true,
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Session-Id",
+                    "type": "Fixed"
+                },
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "User-Name",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Class",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Error-Reporting-Host",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Host-Usage",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Redirect-Max-Cache-Time",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Proxy-Info",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 275,
+            "name": "Session-Termination-Answer",
+            "p-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                }
+            ],
+            "code": 280,
+            "name": "Device-Watchdog-Request",
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Origin-State-Id",
+                    "type": "Optional"
+                }
+            ],
+            "code": 280,
+            "name": "Device-Watchdog-Answer"
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Disconnect-Cause",
+                    "type": "Mandatory"
+                }
+            ],
+            "code": 282,
+            "name": "Disconnect-Peer-Request",
+            "r-bit": true
+        },
+        {
+            "avprule": [
+                {
+                    "name": "Result-Code",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Host",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Origin-Realm",
+                    "type": "Mandatory"
+                },
+                {
+                    "name": "Error-Message",
+                    "type": "Optional"
+                },
+                {
+                    "name": "Failed-AVP",
+                    "qual": "*",
+                    "type": "Optional"
+                }
+            ],
+            "code": 282,
+            "name": "Disconnect-Peer-Answer"
+        }
+    ],
+    "name": "Base protocol dictionary",
+    "vendor": [
+        {
+            "code": 0,
+            "name": "IETF"
+        },
+        {
+            "code": 94,
+            "name": "NOKIA"
+        },
+        {
+            "code": 193,
+            "name": "ERICSSON"
+        },
+        {
+            "code": 5189,
+            "name": "TELEFONICAID"
+        },
+        {
+            "code": 10415,
+            "name": "3GPP"
+        },
+        {
+            "code": 13019,
+            "name": "ETSI"
+        }
+    ]
+}
