@@ -144,10 +144,11 @@ jobs:
       name: Checkout code
       uses: actions/checkout@v4
     -
+      name: Verificar logs del servicio
+      run: journalctl -u docker --no-pager | tail -50
+    -
       name: Verify executed container
-      run: |
-          sleep 30
-          docker ps
+      run: docker ps
     -
       name: Run coverage script
       run: docker exec cov-container sh -c "/var/coverage.sh"
