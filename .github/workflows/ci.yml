@@ -142,9 +142,9 @@ jobs:
     -
       name: Checkout code
       uses: actions/checkout@v4
-    #-
-    #  name: Run coverage script
-    #  run: /var/coverage.sh
+    -
+      name: Wait for report
+      run: sleep 60
     -
       name: List coverage output
       run: ls -la coverage # check the coverage report is generated
