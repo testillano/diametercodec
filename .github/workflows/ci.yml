@@ -33,7 +33,7 @@ jobs:
     steps:
     -
       name: Check out the repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     -
       name: Run frankwolf format
       run: |
@@ -51,7 +51,7 @@ jobs:
     steps:
     -
       name: Check out the repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     -
       name: Login to Docker Hub
       uses: docker/login-action@v1
@@ -105,7 +105,7 @@ jobs:
     steps:
     -
       name: Check out the repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     -
       name: Login to GitHub Container Registry
       uses: docker/login-action@v1
@@ -137,15 +137,25 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--entrypoint sh -v ${{ github.workspace }}/coverage:/code/coverage"
+      options: "--entrypoint sh"
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Run coverage script
+    -
+      name: Checkout code
+      uses: actions/checkout@v4
+    -
+      name: Run coverage script
       run: /var/coverage.sh
-    - name: List coverage output
+    -
+      name: Get container ID
+      run: echo "CONTAINER_ID=$(docker ps -q --filter ancestor=ghcr.io/testillano/diametercodec:latest-cov)" >> $GITHUB_ENV
+    -
+      name: Get coverage directory
+      run: docker cp $CONTAINER_ID:/code/coverage ./coverage
+    -
+      name: List coverage output
       run: ls -la coverage # check the coverage report is generated
-    - name: Deploy to GitHub Pages
+    -
+      name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
