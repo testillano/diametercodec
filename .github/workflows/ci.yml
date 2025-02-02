@@ -137,17 +137,20 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--rm -v ${{ github.workspace }}/coverage:/code/coverage"
+      options: "--entrypoint sh -v ${{ github.workspace }}/coverage:/code/coverage"
     steps:
     -
       name: Checkout code
       uses: actions/checkout@v4
     -
-      name: Wait for report
-      run: sleep 60
+      name: Run coverage script
+      run: /var/coverage.sh
     -
       name: List coverage output
-      run: ls -la coverage # check the coverage report is generated
+      run: ls -la /code/coverage 2>/dev/null # check the coverage report is generated
+    -
+      name: List coverage output2
+      run: ls -la coverage 2>/dev/null # check the coverage report is generated
     -
       name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
