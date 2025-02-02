@@ -135,22 +135,23 @@ jobs:
     needs: build_coverage
     name: Run unit tests and upload coverage info
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--entrypoint sh"
+    services:
+      cov-container:
+        image: ghcr.io/testillano/diametercodec:latest-cov
+        options: "--entrypoint sh" # avoid run coverage because we won't be able to control when finishes
     steps:
     -
       name: Checkout code
       uses: actions/checkout@v4
     -
-      name: Run coverage script
-      run: /var/coverage.sh
+      name: Verify executed container
+      run: docker ps
     -
-      name: Get container ID
-      run: echo "CONTAINER_ID=$(docker ps -q --filter ancestor=ghcr.io/testillano/diametercodec:latest-cov)" >> $GITHUB_ENV
+      name: Run coverage script
+      run: docker exec cov-container sh -c "/var/coverage.sh"
     -
       name: Get coverage directory
-      run: docker cp $CONTAINER_ID:/code/coverage ./coverage
+      run: docker cp cov-container:/code/coverage ./coverage
     -
       name: List coverage output
       run: ls -la coverage # check the coverage report is generated
