@@ -26,7 +26,7 @@ lcov -a base-coverage.info -a test-coverage.info -o total-coverage.info\n\
 lcov --extract total-coverage.info '/code/src/*' --output-file extracted-coverage.info\n\
 lcov --remove extracted-coverage.info 'main.cpp' --output-file final-coverage.info\n\
 \n\
-genhtml final-coverage.info --output-directory coverage --ignore-errors missing\n\
+genhtml final-coverage.info --output-directory coverage --ignore-errors missing --ignore-errors missing,missing\n\
 cp final-coverage.info coverage/lcov.info" > /var/coverage.sh
 
 RUN chmod a+x /var/coverage.sh
