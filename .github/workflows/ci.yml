@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--entrypoint sh -v ${{ github.workspace }}/coverage:/code/coverage"
+      options: "--entrypoint sh -v coverage:/code/coverage"
     steps:
     -
       name: Checkout code
