@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--entrypoint sh -v coverage:/code/coverage"
+      options: "--entrypoint sh -v /tmp/coverage:/code/coverage"
     steps:
     -
       name: Checkout code
@@ -153,7 +153,7 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: /code/coverage
+        publish_dir: /tmp/coverage
 
   push_docker_images_as_latest:
     needs: unit_tests_and_coverage
