@@ -146,8 +146,14 @@ jobs:
       name: Run coverage script
       run: /var/coverage.sh
     -
+      name: Get last docker container
+      run: docker ps -q
+    -
+      name: Type docker
+      run: type docker
+    -
       name: Copy coverage report to host
-      run: docker cp "$(docker ps -q):/code/coverage" coverage
+      run: docker cp $(docker ps -q):/code/coverage coverage
     -
       name: List coverage output
       run: ls -la coverage # check the coverage report is generated
