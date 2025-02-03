@@ -140,11 +140,14 @@ jobs:
       options: "--entrypoint sh"
     steps:
     -
-      name: Checkout code
-      uses: actions/checkout@v4
-    -
       name: Run coverage script
       run: /var/coverage.sh
+
+  publish_coverage:
+    needs: unit_tests_and_coverage
+    name: Publish coverage report
+    runs-on: ubuntu-latest
+    steps:
     -
       name: Get last docker container
       run: docker ps -q
@@ -163,6 +166,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: coverage
+
 
   push_docker_images_as_latest:
     needs: unit_tests_and_coverage
