@@ -137,11 +137,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/testillano/diametercodec:latest-cov
-      options: "--entrypoint sh -v /tmp/coverage:/code/coverage"
+      options: "--entrypoint sh"
     steps:
     -
       name: Run coverage script
       run: /var/coverage.sh
+    -
+      name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: /code/coverage
 
   publish_coverage:
     needs: unit_tests_and_coverage
@@ -149,15 +155,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     -
-      name: List coverage output
-      run: ls -la /tmp/coverage # check the coverage report is generated
+      name: Download coverage report
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage-report
     -
       name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: /tmp/coverage
-
+        publish_dir: ./coverage-report
 
   push_docker_images_as_latest:
     needs: publish_coverage
