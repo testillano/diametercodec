@@ -165,7 +165,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: .
-        skip_clean: true
+        keep_files: true
 
   push_docker_images_as_latest:
     needs: publish_coverage
