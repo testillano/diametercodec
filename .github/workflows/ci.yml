@@ -160,20 +160,25 @@ jobs:
       with:
         name: coverage-report
     -
-      name: Check downloaded artifact
-      run: ls /home/runner/work/diametercodec/diametercodec 2>/dev/null
+      name: Setup Pages
+      uses: actions/configure-pages@v3
     -
-      name: Check downloaded artifact here
-      run: |
-          pwd
-          ls -lRrt
+      name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: .
     -
       name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .
-        keep_files: true
+      id: deployment
+      uses: actions/deploy-pages@v1
+
+  #  -
+  #    name: Deploy to GitHub Pages
+  #    uses: peaceiris/actions-gh-pages@v3
+  #    with:
+  #      github_token: ${{ secrets.GITHUB_TOKEN }}
+  #      publish_dir: .
+  #      keep_files: true
 
   push_docker_images_as_latest:
     needs: publish_coverage
