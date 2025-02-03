@@ -78,7 +78,7 @@ jobs:
         file: Dockerfile.build
         build-args: |
           base_os=ubuntu
-          base_tag=local
+          base_tag=latest
         context: .
         push: true
     -
