@@ -160,11 +160,14 @@ jobs:
       with:
         name: coverage-report
     -
+      name: List artifact downloaded
+      run: ls -lrt
+    -
       name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coverage-report
+        publish_dir: .
 
   push_docker_images_as_latest:
     needs: publish_coverage
