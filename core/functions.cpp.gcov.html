@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>LCOV - final-coverage.info - stack/Vendor.cpp</title>
+  <title>LCOV - final-coverage.info - core/functions.cpp</title>
   <link rel="stylesheet" type="text/css" href="../gcov.css">
 </head>
 
@@ -19,7 +19,7 @@
                 <table cellpadding=1 border=0 width="100%">
           <tr>
             <td width="10%" class="headerItem">Current view:</td>
-            <td width="10%" class="headerValue"><a href="../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory stack">stack</a> - Vendor.cpp<span style="font-size: 80%;"> (source / <a href="Vendor.cpp.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="10%" class="headerValue"><a href="../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory core">core</a> - functions.cpp<span style="font-size: 80%;"> (source / <a href="functions.cpp.func-c.html" title="Click to go to function table">functions</a>)</span></td>
             <td width="5%"></td>
             <td width="5%"></td>
             <td width="5%" class="headerCovTableHead">Coverage</td>
@@ -31,18 +31,18 @@
             <td class="headerValue">final-coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryMed">83.3&nbsp;%</td>
-            <td class="headerCovTableEntry">6</td>
-            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntry">4</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-02-03 02:05:08</td>
+            <td class="headerValue">2025-02-03 02:17:05</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">1</td>
-            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
           </tr>
                   <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -101,29 +101,28 @@
 <span id="L39"><span class="lineNum">      39</span>              : </span>
 <span id="L40"><span class="lineNum">      40</span>              : </span>
 <span id="L41"><span class="lineNum">      41</span>              : // Project</span>
-<span id="L42"><span class="lineNum">      42</span>              : #include &lt;ert/diametercodec/stack/Vendor.hpp&gt;</span>
+<span id="L42"><span class="lineNum">      42</span>              : #include &lt;ert/diametercodec/core/functions.hpp&gt;</span>
 <span id="L43"><span class="lineNum">      43</span>              : </span>
 <span id="L44"><span class="lineNum">      44</span>              : </span>
 <span id="L45"><span class="lineNum">      45</span>              : namespace ert</span>
 <span id="L46"><span class="lineNum">      46</span>              : {</span>
 <span id="L47"><span class="lineNum">      47</span>              : namespace diametercodec</span>
 <span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span>              : namespace stack</span>
+<span id="L49"><span class="lineNum">      49</span>              : namespace core</span>
 <span id="L50"><span class="lineNum">      50</span>              : {</span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC tlaBgGNC">           1 : nlohmann::json Vendor::asJson(void) const {</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 :     nlohmann::json result;</span></span>
-<span id="L54"><span class="lineNum">      54</span>              : </span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 :     result[&quot;name&quot;] = name_;</span></span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 :     result[&quot;code&quot;] = code_;</span></span>
-<span id="L57"><span class="lineNum">      57</span>              : </span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :     return result;</span></span>
-<span id="L59"><span class="lineNum">      59</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L60"><span class="lineNum">      60</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC tlaBgGNC">           1 : std::string functions::avpIdAsPairString(const AvpId &amp;avpId) {</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 :     return &quot;(&quot; + std::to_string(avpId.first) + &quot;,&quot; + std::to_string(avpId.second) + &quot;)&quot;;</span></span>
+<span id="L54"><span class="lineNum">      54</span>              : }</span>
+<span id="L55"><span class="lineNum">      55</span>              : </span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 : std::string functions::commandIdAsPairString(const CommandId &amp; commandId) {</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           1 :     return &quot;(&quot; + std::to_string(commandId.first) + &quot;,&quot; + (commandId.second ? &quot;request&quot; : &quot;answer&quot;) + &quot;)&quot;;</span></span>
+<span id="L58"><span class="lineNum">      58</span>              : }</span>
+<span id="L59"><span class="lineNum">      59</span>              : </span>
+<span id="L60"><span class="lineNum">      60</span>              : }</span>
 <span id="L61"><span class="lineNum">      61</span>              : }</span>
 <span id="L62"><span class="lineNum">      62</span>              : }</span>
-<span id="L63"><span class="lineNum">      63</span>              : }</span>
-<span id="L64"><span class="lineNum">      64</span>              : </span>
+<span id="L63"><span class="lineNum">      63</span>              : </span>
         </pre>
               </td>
             </tr>
