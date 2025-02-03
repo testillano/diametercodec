@@ -164,7 +164,7 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: stack
+        publish_dir: .
 
   push_docker_images_as_latest:
     needs: publish_coverage
