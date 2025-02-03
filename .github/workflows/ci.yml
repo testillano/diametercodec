@@ -166,23 +166,18 @@ jobs:
       name: Setup Pages
       uses: actions/configure-pages@v3
     -
+      name: Create badge json file
+      run: |
+        value=$(grep -oP '(?<=<td class="headerCovTableEntryMed">)[0-9]+\.[0-9]+' index.html | head -n +1) # tail -n -1 to get Functions coverage
+        echo '{"schemaVersion":1,"label":"coverage","message":"'${value}'%","color":"brightgreen"}' > badge.json
+    -
       name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: .
-
     -
       name: Deploy to GitHub Pages
-      #id: deployment
       uses: actions/deploy-pages@v4
-
-  #  -
-  #    name: Deploy to GitHub Pages
-  #    uses: peaceiris/actions-gh-pages@v3
-  #    with:
-  #      github_token: ${{ secrets.GITHUB_TOKEN }}
-  #      publish_dir: .
-  #      keep_files: true
 
   push_docker_images_as_latest:
     needs: publish_coverage
