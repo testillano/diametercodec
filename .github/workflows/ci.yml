@@ -169,7 +169,7 @@ jobs:
 
 
   push_docker_images_as_latest:
-    needs: unit_tests_and_coverage
+    needs: publish_coverage
     name: Push docker images to Docker/Github Hubs as latest
     runs-on: ubuntu-latest
     #if: github.event_name == 'push'
