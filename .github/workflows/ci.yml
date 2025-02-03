@@ -78,7 +78,7 @@ jobs:
         file: Dockerfile.build
         build-args: |
           base_os=ubuntu
-          base_tag=oracular-20241009
+          base_tag=local
         context: .
         push: true
     -
