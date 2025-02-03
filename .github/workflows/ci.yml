@@ -169,9 +169,16 @@ jobs:
       name: Create badge json file
       run: |
         value=$(grep -oP '(?<=<td class="headerCovTableEntryMed">)[0-9]+\.[0-9]+' index.html | head -n +1) # tail -n -1 to get Functions coverage
-        echo '{"schemaVersion":1,"label":"coverage","value":'${value}'}' > badge.json
-        echo '{"schemaVersion":1,"label":"coverage","value":30}' > badge2.json
-        echo '{"schemaVersion":1,"label":"coverage","value":90}' > badge3.json
+        if [ "${value}" -lt 50 ]; then
+          color="red"
+        elif [ "${value}" -lt 80 ]; then
+          color="orange"
+        else
+          color="brightgreen"
+        fi
+        echo '{"schemaVersion":1,"label":"coverage","message":"'${value}'","color":"'${color}'"}' > badge.json
+        echo '{"schemaVersion":1,"label":"coverage","message":"30","color":"red"}' > badge2.json
+        echo '{"schemaVersion":1,"label":"coverage","message":"90","color":"brightgreen"}' > badge3.json
     -
       name: Upload artifact
       uses: actions/upload-pages-artifact@v3
