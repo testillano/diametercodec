@@ -153,6 +153,9 @@ jobs:
     needs: unit_tests_and_coverage
     name: Publish coverage report
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
     -
       name: Download coverage report
