@@ -26,10 +26,6 @@ on:
   #release:
   #  types: [published]
 
-permissions:
-  pages: write
-  id-token: write
-
 jobs:
   format_style:
     name: Check source code format
@@ -174,7 +170,7 @@ jobs:
 
     -
       name: Deploy to GitHub Pages
-      id: deployment
+      #id: deployment
       uses: actions/deploy-pages@v4
 
   #  -
