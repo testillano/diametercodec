@@ -160,6 +160,14 @@ jobs:
       with:
         name: coverage-report
     -
+      name: Check downloaded artifact
+      run: ls /home/runner/work/diametercodec/diametercodec 2>/dev/null
+    -
+      name: Check downloaded artifact here
+      run: |
+          pwd
+          ls -lRrt
+    -
       name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
