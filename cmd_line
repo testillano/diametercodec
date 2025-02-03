@@ -1,0 +1,1 @@
+genhtml final-coverage.info --output-directory coverage
