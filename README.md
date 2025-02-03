@@ -3,8 +3,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://codedocs.xyz/testillano/diametercodec.svg)](https://codedocs.xyz/testillano/diametercodec/index.html)
 [![Coverage Status](https://img.shields.io/endpoint?url=https://testillano.github.io/diametercodec/badge.json)](https://testillano.github.io/diametercodec)
-[![Coverage Status2](https://img.shields.io/endpoint?url=https://testillano.github.io/diametercodec/badge2.json)](https://testillano.github.io/diametercodec)
-[![Coverage Status3](https://img.shields.io/endpoint?url=https://testillano.github.io/diametercodec/badge3.json)](https://testillano.github.io/diametercodec)
 [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/testillano)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/testillano/diametercodec/graphs/commit-activity)
 [![Main project workflow](https://github.com/testillano/diametercodec/actions/workflows/ci.yml/badge.svg)](https://github.com/testillano/diametercodec/actions/workflows/ci.yml)
