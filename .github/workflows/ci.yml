@@ -160,7 +160,7 @@ jobs:
           color="brightgreen"
         fi
 
-        echo '{"schemaVersion":1,"label":"coverage","message":"'${value}'","color":"'${color}'"}' > /code/coverage/badge.json
+        echo '{"schemaVersion":1,"label":"coverage","message":"'${value}'%","color":"'${color}'"}' > /code/coverage/badge.json
     -
       name: Upload artifact
       uses: actions/upload-pages-artifact@v3

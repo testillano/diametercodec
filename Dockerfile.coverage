@@ -5,7 +5,7 @@ MAINTAINER testillano
 LABEL testillano.diametercodec.description="Docker image for diametercodec coverage"
 
 ARG os_type=ubuntu
-RUN if [ "${os_type}" = "alpine" ] ; then apk update && apk add lcov --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ && rm -rf /var/cache/apk/* ; elif [ "${os_type}" = "ubuntu" ] ; then apt-get update && apt-get install -y lcov && apt-get clean ; fi
+RUN if [ "${os_type}" = "alpine" ] ; then apk update && apk add lcov bc --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ && rm -rf /var/cache/apk/* ; elif [ "${os_type}" = "ubuntu" ] ; then apt-get update && apt-get install -y lcov bc && apt-get clean ; fi
 
 COPY . /code
 WORKDIR /code
