@@ -21,8 +21,8 @@ ARG build_type=Release
 COPY --from=builder /code/build/${build_type}/bin/printHardcodedStacks /opt/
 
 # Ubuntu has bash already installed, but vim is missing
-ARG base_os=ubuntu
-RUN if [ "${base_os}" = "alpine" ] ; then apk update && apk add bash jq && rm -rf /var/cache/apk/* ; elif [ "${base_os}" = "ubuntu" ] ; then apt-get update && apt-get install -y vim jq && apt-get clean ; fi
+ARG os_type=ubuntu
+RUN if [ "${os_type}" = "alpine" ] ; then apk update && apk add bash jq && rm -rf /var/cache/apk/* ; elif [ "${os_type}" = "ubuntu" ] ; then apt-get update && apt-get install -y vim jq && apt-get clean ; fi
 
 ENTRYPOINT ["/bin/bash"]
 CMD []

@@ -6,6 +6,7 @@
 image_tag__dflt=latest
 base_os__dflt=ubuntu
 base_tag__dflt=latest
+os_type__dflt=ubuntu
 make_procs__dflt=$(grep processor /proc/cpuinfo -c)
 build_type__dflt=Release
 ert_logger_ver__dflt=v1.1.0
@@ -143,10 +144,12 @@ build_project_image() {
   _read base_tag
   _read make_procs
   _read build_type
+  _read os_type
 
   bargs="--build-arg base_tag=${base_tag}"
   bargs+=" --build-arg make_procs=${make_procs}"
   bargs+=" --build-arg build_type=${build_type}"
+  bargs+=" --build-arg os_type=${os_type}"
 
   set -x
   rm -f CMakeCache.txt
