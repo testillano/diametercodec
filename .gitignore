@@ -14,4 +14,4 @@ CMakeDoxyfile.in
 docs/doxygen/html
 docs/doxygen/man
 docs/doxygen/latex
-
+coverage

@@ -1,23 +1,52 @@
 #!/bin/bash
+# =============================================================================
+# diametercodec build script (flat multi-stage model)
+# =============================================================================
+# All dependency versions are declared in Dockerfile as ARGs.
+# This script reads them as defaults and exposes them as --build-arg overrides.
+#
+# Commands:
+#   --builder:   Build deps stage only (builder image with all libraries)
+#   --image:     Full build: deps + compile + unit-test image
+#   (no args):   builds everything (--image).
+#
+# Environment variables (override defaults):
+#   All ARG names from Dockerfile can be set as env vars, e.g.:
+#     nlohmann_json_ver=v3.12.0 ./build.sh --image
+#
+# Other variables:
+#   DBUILD_XTRA_OPTS: extra docker build options (e.g., --no-cache)
+# =============================================================================
+
+set -e
 
 #############
 # VARIABLES #
 #############
-image_tag__dflt=latest
-base_os__dflt=ubuntu
-base_tag__dflt=latest
-os_type__dflt=ubuntu
-make_procs__dflt=$(grep processor /proc/cpuinfo -c)
-build_type__dflt=Release
-ert_logger_ver__dflt=v1.1.0
-nlohmann_json_ver__dflt=v3.10.5
-pboettch_jsonschemavalidator_ver__dflt=2.1.0
-jupp0r_prometheuscpp_ver__dflt=v0.13.0
-# 3rd party used by prometheus:
-civetweb_civetweb_ver__dflt=v1.14
-ert_metrics_ver__dflt=v1.1.0
-google_test_ver__dflt=v1.11.0
+SCR="$(readlink -f "$0")"
+SCR_DIR="$(dirname "${SCR}")"
+cd "${SCR_DIR}"
+
+DOCKERFILE=Dockerfile
 registry=ghcr.io/testillano
+
+# Parse version defaults from Dockerfile (single source of truth)
+parse_arg() {
+  grep "^ARG ${1}=" "${DOCKERFILE}" | head -1 | cut -d= -f2
+}
+
+# Defaults from Dockerfile
+make_procs__dflt=$(grep processor /proc/cpuinfo -c)
+build_type__dflt=$(parse_arg build_type)
+ert_logger_ver__dflt=$(parse_arg ert_logger_ver)
+nlohmann_json_ver__dflt=$(parse_arg nlohmann_json_ver)
+pboettch_jsonschemavalidator_ver__dflt=$(parse_arg pboettch_jsonschemavalidator_ver)
+jupp0r_prometheuscpp_ver__dflt=$(parse_arg jupp0r_prometheuscpp_ver)
+civetweb_civetweb_ver__dflt=$(parse_arg civetweb_civetweb_ver)
+ert_metrics_ver__dflt=$(parse_arg ert_metrics_ver)
+google_test_ver__dflt=$(parse_arg google_test_ver)
+
+image_tag__dflt=latest
 
 #############
 # FUNCTIONS #
@@ -25,159 +54,112 @@ registry=ghcr.io/testillano
 usage() {
   cat << EOF
 
-  Usage: $0 [--builder-image|--project|--project-image|--auto]
+  Usage: $0 [--builder|--image]
 
-         --builder-image: builds base image from './Dockerfile.build'.
-         --project:       builds the project library using builder image.
-         --project-image: builds project image from './Dockerfile'.
-         --auto:          builds everything using defaults.
+         (no args):   builds everything (--image).
+         --builder:   builds deps stage (builder image with all libraries).
+         --image:     full build: deps + compile + unit-test image.
 
-         Environment variables:
+         Environment variables (override any version):
 
-         For headless mode you may prepend or export asked/environment variables for the corresponding
-         docker procedure:
+           image_tag, make_procs, build_type, ert_logger_ver,
+           nlohmann_json_ver, pboettch_jsonschemavalidator_ver,
+           jupp0r_prometheuscpp_ver, civetweb_civetweb_ver,
+           ert_metrics_ver, google_test_ver
 
-         --builder-image: image_tag, base_os, base_tag (nghttp2), make_procs, build_type, ert_logger_ver, nlohmann_json_ver, pboettch_jsonschemavalidator_ver, jupp0r_prometheuscpp_ver, civetweb_civetweb_ver, ert_metrics_ver, google_test_ver
-         --project:       make_procs, build_type, base_tag (diametercodec_builder)
-         --project-image: image_tag, base_tag (diametercodec_builder), make_procs, build_type
-         --auto:          any of the variables above
+         Other variables:
 
-         Other prepend variables:
-
-         DBUILD_XTRA_OPTS: extra options to docker build.
+           DBUILD_XTRA_OPTS: extra docker build options (e.g., --no-cache)
 
          Examples:
 
-         base_os=alpine $0 --auto
-         image_tag=test1 $0 --builder-image
-         build_type=Debug $0 --auto
-         DBUILD_XTRA_OPTS=--no-cache $0 --auto
+           $0
+           nlohmann_json_ver=v3.12.0 $0 --image
+           DBUILD_XTRA_OPTS=--no-cache $0
 
 EOF
 }
 
-# $1: variable by reference
-_read() {
-  local -n varname=$1
-
-  local default=$(eval echo \$$1__dflt)
-  local s_default="<null>"
-  [ -n "${default}" ] && s_default="${default}"
-  echo "Input '$1' value [${s_default}]:"
-
-  if [ -n "${varname}" ]
-  then
-    echo "${varname}"
-  else
-    read -r varname
-    [ -z "${varname}" ] && varname=${default}
+# Resolve variable: use env value if set, otherwise use __dflt
+resolve() {
+  local var=$1
+  local val="${!var}"
+  if [ -z "${val}" ]; then
+    val="$(eval echo \$${var}__dflt)"
   fi
+  echo "${val}"
 }
 
-build_builder_image() {
+build_builder() {
   echo
-  echo "=== Build diametercodec_builder image ==="
+  echo "=== Build diametercodec_builder (deps stage) ==="
   echo
-  _read image_tag
-  _read base_os
-  _read base_tag
-  _read make_procs
-  _read build_type
-  _read ert_logger_ver
-  _read nlohmann_json_ver
-  _read pboettch_jsonschemavalidator_ver
-  _read jupp0r_prometheuscpp_ver
-  _read civetweb_civetweb_ver
-  _read ert_metrics_ver
-  _read google_test_ver
 
-  bargs="--build-arg base_os=${base_os}"
-  bargs+=" --build-arg base_tag=${base_tag}"
-  bargs+=" --build-arg make_procs=${make_procs}"
-  bargs+=" --build-arg build_type=${build_type}"
-  bargs+=" --build-arg ert_logger_ver=${ert_logger_ver}"
-  bargs+=" --build-arg nlohmann_json_ver=${nlohmann_json_ver}"
-  bargs+=" --build-arg pboettch_jsonschemavalidator_ver=${pboettch_jsonschemavalidator_ver}"
-  bargs+=" --build-arg jupp0r_prometheuscpp_ver=${jupp0r_prometheuscpp_ver}"
-  bargs+=" --build-arg civetweb_civetweb_ver=${civetweb_civetweb_ver}"
-  bargs+=" --build-arg ert_metrics_ver=${ert_metrics_ver}"
-  bargs+=" --build-arg google_test_ver=${google_test_ver}"
+  local tag=$(resolve image_tag)
+  local bargs=""
+  bargs+=" --build-arg make_procs=$(resolve make_procs)"
+  bargs+=" --build-arg build_type=$(resolve build_type)"
+  bargs+=" --build-arg ert_logger_ver=$(resolve ert_logger_ver)"
+  bargs+=" --build-arg nlohmann_json_ver=$(resolve nlohmann_json_ver)"
+  bargs+=" --build-arg pboettch_jsonschemavalidator_ver=$(resolve pboettch_jsonschemavalidator_ver)"
+  bargs+=" --build-arg jupp0r_prometheuscpp_ver=$(resolve jupp0r_prometheuscpp_ver)"
+  bargs+=" --build-arg civetweb_civetweb_ver=$(resolve civetweb_civetweb_ver)"
+  bargs+=" --build-arg ert_metrics_ver=$(resolve ert_metrics_ver)"
+  bargs+=" --build-arg google_test_ver=$(resolve google_test_ver)"
 
-  set -x
-  rm -f CMakeCache.txt
-  # shellcheck disable=SC2086
-  docker build --rm ${DBUILD_XTRA_OPTS} ${bargs} -f Dockerfile.build -t ${registry}/diametercodec_builder:"${image_tag}" . || return 1
-  set +x
+  docker build --target deps \
+    -t ${registry}/diametercodec_builder:${tag} \
+    ${bargs} ${DBUILD_XTRA_OPTS} .
+
+  echo
+  echo "Built: ${registry}/diametercodec_builder:${tag}"
 }
 
-build_project() {
+build_image() {
   echo
-  echo "=== Format source code ==="
+  echo "=== Build diametercodec_ut (unit-test image) ==="
   echo
-  sources=$(find . -name "*.hpp" -o -name "*.cpp")
-  echo "TEMPORARY: no source !"
-  docker run -i --rm -v $PWD:/data frankwolf/astyle ${sources}
+
+  local tag=$(resolve image_tag)
+  local bargs=""
+  bargs+=" --build-arg make_procs=$(resolve make_procs)"
+  bargs+=" --build-arg build_type=$(resolve build_type)"
+  bargs+=" --build-arg ert_logger_ver=$(resolve ert_logger_ver)"
+  bargs+=" --build-arg nlohmann_json_ver=$(resolve nlohmann_json_ver)"
+  bargs+=" --build-arg pboettch_jsonschemavalidator_ver=$(resolve pboettch_jsonschemavalidator_ver)"
+  bargs+=" --build-arg jupp0r_prometheuscpp_ver=$(resolve jupp0r_prometheuscpp_ver)"
+  bargs+=" --build-arg civetweb_civetweb_ver=$(resolve civetweb_civetweb_ver)"
+  bargs+=" --build-arg ert_metrics_ver=$(resolve ert_metrics_ver)"
+  bargs+=" --build-arg google_test_ver=$(resolve google_test_ver)"
+
+  docker build --target unit-test \
+    -t ${registry}/diametercodec_ut:${tag} \
+    ${bargs} ${DBUILD_XTRA_OPTS} .
 
   echo
-  echo "=== Build diametercodec project ==="
-  echo
-  _read base_tag
-  _read make_procs
-  _read build_type
-
-  envs="-e MAKE_PROCS=${make_procs} -e BUILD_TYPE=${build_type}"
-
-  set -x
-  rm -f CMakeCache.txt
-  # shellcheck disable=SC2086
-  docker run --rm -it -u "$(id -u):$(id -g)" ${envs} -v "${PWD}":/code -w /code ${registry}/diametercodec_builder:"${base_tag}" || return 1
-  # shellcheck disable=SC2086
-  docker run --rm -it -u "$(id -u):$(id -g)" ${envs} -v "${PWD}":/code -w /code ${registry}/diametercodec_builder:"${base_tag}" "" doc || return 1
-  set +x
+  echo "Built: ${registry}/diametercodec_ut:${tag}"
 }
 
-build_project_image() {
-  echo
-  echo "=== Build diametercodec image ==="
-  echo
-  _read image_tag
-  _read base_tag
-  _read make_procs
-  _read build_type
-  _read os_type
-
-  bargs="--build-arg base_tag=${base_tag}"
-  bargs+=" --build-arg make_procs=${make_procs}"
-  bargs+=" --build-arg build_type=${build_type}"
-  bargs+=" --build-arg os_type=${os_type}"
-
-  set -x
-  rm -f CMakeCache.txt
-  # shellcheck disable=SC2086
-  docker build --rm ${DBUILD_XTRA_OPTS} ${bargs} -t ${registry}/diametercodec:"${image_tag}" . || return 1
-  set +x
-}
-
-build_auto() {
-  # export defaults to automate, but allow possible environment values:
-  # shellcheck disable=SC1090
-  source <(grep -E '^[02a-z_]+__dflt' "$0" | sed 's/^/export /' | sed 's/__dflt//' | sed -e 's/\([0a-z_]*\)=\(.*\)/\1=\${\1:-\2}/')
-  build_builder_image && build_project && build_project_image
-}
-
-#############
-# EXECUTION #
-#############
-# shellcheck disable=SC2164
-cd "$(dirname "$0")"
-
+########
+# MAIN #
+########
 case "$1" in
-  --builder-image) build_builder_image ;;
-  --project) build_project ;;
-  --project-image) build_project_image ;;
-  --auto) build_auto ;;
-  *) usage && exit 1 ;;
+  --builder)
+    build_builder
+    ;;
+  --image)
+    build_image
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  "")
+    build_image
+    ;;
+  *)
+    echo "Unknown option: $1"
+    usage
+    exit 1
+    ;;
 esac
-
-exit $?
-

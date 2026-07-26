@@ -184,10 +184,7 @@ etc.
 
 #### Coverage
 
-Unit test coverage could be easily calculated executing the script `./tools/coverage.sh`. This script builds and runs an image based in `./Dockerfile.coverage` which uses the `lcov` utility behind. Finally, a `firefox` instance is launched showing the coverage report where you could navigate the source tree to check the current status of the project. This stage is also executed as part of `h2agent` continuous integration (`github workflow`).
-
-Both `ubuntu` and `alpine` base images are supported, but the official image uploaded is the one based in `ubuntu`.
-If you want to work with alpine-based images, you may build everything from scratch, including all docker base images which are project dependencies.
+Unit test coverage could be easily calculated executing the script `./tools/coverage.sh`. This script builds a debug image and runs `lcov` to generate the coverage report. Finally, a `firefox` instance is launched showing the coverage report where you could navigate the source tree to check the current status of the project.
 
 ## Integration
 

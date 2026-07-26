@@ -37,11 +37,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/**
+ * @file defines.hpp
+ * @brief Core type definitions, constants and macros for the Diameter codec.
+ *
+ * Defines:
+ * - Basic numeric types (U8, U16, U32, S32, U64, S64, F32, F64)
+ * - AvpId (code + vendor-id pair)
+ * - CommandId (code + request indicator pair)
+ * - Buffer (std::vector<uint8_t>)
+ * - AVP/Message header lengths and flag constants
+ * - NTP epoch offset for Time AVP conversion
+ * - REQUIRED_WORDS macro for 4-byte alignment
+ */
+
 #pragma once
 
 // Standard
 #include <cstdint>
 #include <utility>  // std::pair
+#include <vector>
 
 // Project
 
@@ -166,6 +181,32 @@ typedef unsigned int ApplicationId;
 typedef unsigned int HopByHop;
 
 typedef unsigned int EndToEnd;
+
+// Binary buffer
+using Buffer = std::vector<uint8_t>;
+
+// AVP header lengths (bytes)
+constexpr int AvpHeaderLenWithVendor    = 12; // code(4) + flags(1) + length(3) + vendor-id(4)
+constexpr int AvpHeaderLenWithoutVendor = 8;  // code(4) + flags(1) + length(3)
+
+// Message header length (bytes)
+constexpr int MessageHeaderLen = 20; // version(1) + length(3) + flags(1) + code(3) + app-id(4) + hbh(4) + e2e(4)
+
+// Padding: round up to next 4-byte boundary
+#define REQUIRED_WORDS(bytes) (((bytes) + 3) / 4)
+
+// NTP epoch offset (seconds between 1900-01-01 and 1970-01-01)
+constexpr uint32_t NtpEpochOffset = 2208988800U;
+
+// AVP flags
+constexpr uint8_t AvpFlagVendor    = 0x80;
+constexpr uint8_t AvpFlagMandatory = 0x40;
+
+// Message flags
+constexpr uint8_t MsgFlagRequest   = 0x80;
+constexpr uint8_t MsgFlagProxiable = 0x40;
+constexpr uint8_t MsgFlagError     = 0x20;
+constexpr uint8_t MsgFlagRetransmit = 0x10;
 
 }
 }
