@@ -41,9 +41,6 @@ build_type__dflt=$(parse_arg build_type)
 ert_logger_ver__dflt=$(parse_arg ert_logger_ver)
 nlohmann_json_ver__dflt=$(parse_arg nlohmann_json_ver)
 pboettch_jsonschemavalidator_ver__dflt=$(parse_arg pboettch_jsonschemavalidator_ver)
-jupp0r_prometheuscpp_ver__dflt=$(parse_arg jupp0r_prometheuscpp_ver)
-civetweb_civetweb_ver__dflt=$(parse_arg civetweb_civetweb_ver)
-ert_metrics_ver__dflt=$(parse_arg ert_metrics_ver)
 google_test_ver__dflt=$(parse_arg google_test_ver)
 
 image_tag__dflt=latest
@@ -64,8 +61,7 @@ usage() {
 
            image_tag, make_procs, build_type, ert_logger_ver,
            nlohmann_json_ver, pboettch_jsonschemavalidator_ver,
-           jupp0r_prometheuscpp_ver, civetweb_civetweb_ver,
-           ert_metrics_ver, google_test_ver
+           google_test_ver
 
          Other variables:
 
@@ -102,9 +98,6 @@ build_builder() {
   bargs+=" --build-arg ert_logger_ver=$(resolve ert_logger_ver)"
   bargs+=" --build-arg nlohmann_json_ver=$(resolve nlohmann_json_ver)"
   bargs+=" --build-arg pboettch_jsonschemavalidator_ver=$(resolve pboettch_jsonschemavalidator_ver)"
-  bargs+=" --build-arg jupp0r_prometheuscpp_ver=$(resolve jupp0r_prometheuscpp_ver)"
-  bargs+=" --build-arg civetweb_civetweb_ver=$(resolve civetweb_civetweb_ver)"
-  bargs+=" --build-arg ert_metrics_ver=$(resolve ert_metrics_ver)"
   bargs+=" --build-arg google_test_ver=$(resolve google_test_ver)"
 
   docker build --target deps \
@@ -127,9 +120,6 @@ build_image() {
   bargs+=" --build-arg ert_logger_ver=$(resolve ert_logger_ver)"
   bargs+=" --build-arg nlohmann_json_ver=$(resolve nlohmann_json_ver)"
   bargs+=" --build-arg pboettch_jsonschemavalidator_ver=$(resolve pboettch_jsonschemavalidator_ver)"
-  bargs+=" --build-arg jupp0r_prometheuscpp_ver=$(resolve jupp0r_prometheuscpp_ver)"
-  bargs+=" --build-arg civetweb_civetweb_ver=$(resolve civetweb_civetweb_ver)"
-  bargs+=" --build-arg ert_metrics_ver=$(resolve ert_metrics_ver)"
   bargs+=" --build-arg google_test_ver=$(resolve google_test_ver)"
 
   docker build --target unit-test \

@@ -31,8 +31,8 @@ ${CMAKE_EXE_LINKER_FLAGS}
         ert_logger
 #        ert_metrics
 
-        prometheus-cpp-pull
-        prometheus-cpp-core
+#        prometheus-cpp-pull
+#        prometheus-cpp-core
         z
 
 #        boost_system   #Needed by nghttp2_asio

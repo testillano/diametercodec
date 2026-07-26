@@ -32,9 +32,6 @@ ARG build_type=Release
 ARG ert_logger_ver=v1.1.1
 ARG nlohmann_json_ver=v3.12.0
 ARG pboettch_jsonschemavalidator_ver=2.4.0
-ARG jupp0r_prometheuscpp_ver=v1.3.0
-ARG civetweb_civetweb_ver=v1.16
-ARG ert_metrics_ver=v1.3.0
 ARG google_test_ver=v1.11.0
 
 # ---------------------------------------------------------------------------
@@ -43,7 +40,7 @@ ARG google_test_ver=v1.11.0
 RUN apt-get update && apt-get install -y \
     wget tar \
     make cmake g++ \
-    libssl-dev zlib1g-dev libcurl4-openssl-dev \
+    libssl-dev zlib1g-dev \
     doxygen graphviz \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -78,31 +75,6 @@ RUN set -x && \
     cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .. && \
     make -j${make_procs} && make install && \
     cd ../.. && rm -rf * && \
-    set +x
-
-# ===========================================================================
-# PROMETHEUS-CPP + CIVETWEB
-# ===========================================================================
-RUN set -x && \
-    wget https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/${jupp0r_prometheuscpp_ver}.tar.gz && \
-    tar xvf ${jupp0r_prometheuscpp_ver}.tar.gz && cd prometheus-cpp*/3rdparty && \
-    wget https://github.com/civetweb/civetweb/archive/refs/tags/${civetweb_civetweb_ver}.tar.gz && \
-    tar xvf ${civetweb_civetweb_ver}.tar.gz && mv civetweb-*/* civetweb && cd .. && \
-    mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=${build_type} -DENABLE_TESTING=OFF .. && \
-    make -j${make_procs} && make install && \
-    cd ../.. && rm -rf * && \
-    set +x
-
-# ===========================================================================
-# ERT_METRICS
-# ===========================================================================
-RUN set -x && \
-    wget https://github.com/testillano/metrics/archive/${ert_metrics_ver}.tar.gz && \
-    tar xvf ${ert_metrics_ver}.tar.gz && cd metrics-*/ && \
-    cmake -DERT_METRICS_BuildExamples=OFF -DCMAKE_BUILD_TYPE=${build_type} . && \
-    make -j${make_procs} && make install && \
-    cd .. && rm -rf * && \
     set +x
 
 # ===========================================================================
