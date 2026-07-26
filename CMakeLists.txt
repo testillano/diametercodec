@@ -13,6 +13,7 @@ endif()
 # Variables #
 #############
 option(ERT_DIAMETERCODEC_BuildExamples "Build the examples." ${MAIN_PROJECT})
+option(ERT_DIAMETERCODEC_BuildTests "Build the unit tests." ${MAIN_PROJECT})
 set(ERT_DIAMETERCODEC_TARGET_NAME       ${PROJECT_NAME})
 set(ERT_DIAMETERCODEC_INCLUDE_BUILD_DIR "${PROJECT_SOURCE_DIR}/include")
 
@@ -88,7 +89,9 @@ endif()
 # Subdirectories #
 ##################
 add_subdirectory( src )
-add_subdirectory( ut )
+if (ERT_DIAMETERCODEC_BuildTests)
+  add_subdirectory( ut )
+endif()
 if (ERT_DIAMETERCODEC_BuildExamples)
   add_subdirectory( examples )
 endif()
