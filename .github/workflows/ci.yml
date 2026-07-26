@@ -15,6 +15,12 @@ on:
     branches:
     - master
 
+permissions:
+  contents: read
+  packages: write
+  pages: write
+  id-token: write
+
 jobs:
   format_style:
     name: Check source code format
@@ -33,9 +39,6 @@ jobs:
     needs: format_style
     name: Build and push docker images as local
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
     -
       name: Check out the repo
@@ -92,9 +95,6 @@ jobs:
     needs: build_and_push_docker_images_as_local
     name: Build coverage image
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
     -
       name: Check out the repo
