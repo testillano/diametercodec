@@ -129,7 +129,7 @@ SOFTWARE.
 // * \page item_enum
 // * Enumerate access by position
 // */
-//#define item_enum(name,ii) name::literal[ii]
+// #define item_enum(name,ii) name::literal[ii]
 
 namespace ert {
 namespace diametercodec {

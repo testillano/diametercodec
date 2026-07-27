@@ -467,9 +467,9 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 
                     throw std::runtime_error(s_ex);
                 }  // parent is children of (ref): loop !
-            }      // parent found
-        }          // search parents
-    }              // search grouped avps (ref)
+            }  // parent found
+        }  // search parents
+    }  // search grouped avps (ref)
 }
 
 void Dictionary::extractCommands(const nlohmann::json &doc) {
