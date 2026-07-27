@@ -40,92 +40,80 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
 #include <map>
+#include <string>
 
 // Project
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace core
-{
+namespace ert {
+namespace diametercodec {
+namespace core {
 
 /**
-* Class helper to manage multi-range expressions like '1-4,23,45-46' (1,2,3,4,23,45,46)
-*/
+ * Class helper to manage multi-range expressions like '1-4,23,45-46' (1,2,3,4,23,45,46)
+ */
 class MultiRangeExpression {
-
     std::string literal_;
-    std::map < unsigned int, int/*dummy*/ > data_; // expands literal
+    std::map<unsigned int, int /*dummy*/> data_;  // expands literal
 
+    void refresh(void);  // align 'data_' and 'literal_'
 
-    void refresh(void) ;  // align 'data_' and 'literal_'
-
-
-public:
-
-    MultiRangeExpression() {};
-    ~MultiRangeExpression() {};
-
+   public:
+    MultiRangeExpression(){};
+    ~MultiRangeExpression(){};
 
     /**
-    * Gets the configured literal by mean #setLiteral or #addLiteral
-    *
-    * @return Literal
-    */
-    const std::string &getLiteral(void) const {
-        return literal_;
-    }
+     * Gets the configured literal by mean #setLiteral or #addLiteral
+     *
+     * @return Literal
+     */
+    const std::string &getLiteral(void) const { return literal_; }
 
     /**
-    * Gets expanded representation for stored literal. E.g.: '1-3,8,10' => '1,2,3,7,8,10'
-    *
-    * @return Expanded literal
-    */
+     * Gets expanded representation for stored literal. E.g.: '1-3,8,10' => '1,2,3,7,8,10'
+     *
+     * @return Expanded literal
+     */
     std::string getExpandedLiteral(void) const;
 
     /**
-    * Simplify stored literal. E.g.: '1,1,1,2,3,7,8,10' => '1-3,8,10' and returns it.
-    *
-    * @return Simplified literal
-    */
+     * Simplify stored literal. E.g.: '1,1,1,2,3,7,8,10' => '1-3,8,10' and returns it.
+     *
+     * @return Simplified literal
+     */
     const char *simplifyLiteral(void);
 
     // helpers
 
     /**
-    * Returns true if the value provided is contained in the multirange expression literal
-    *
-    * @param value Value to be tested
-    * @return True or false
-    */
-    bool contain(const unsigned int & value) const {
-        return (data_.find(value) != data_.end());
-    }
+     * Returns true if the value provided is contained in the multirange expression literal
+     *
+     * @param value Value to be tested
+     * @return True or false
+     */
+    bool contain(const unsigned int &value) const { return (data_.find(value) != data_.end()); }
 
     // setters
 
     /**
-    * Configures a new literal
-    *
-    * @param l Literal to be stored
-    */
+     * Configures a new literal
+     *
+     * @param l Literal to be stored
+     */
     void setLiteral(const std::string &l) {
         literal_ = l;
         refresh();
     }
 
     /**
-    * Accumulates the provided literal over the stored literal
-    * You could simplify with #simplifyLiteral, because perhaps there is overlapping between current literal and provided one.
-    *
-    * @param l Literal to be added
-    */
+     * Accumulates the provided literal over the stored literal
+     * You could simplify with #simplifyLiteral, because perhaps there is overlapping between current literal and
+     * provided one.
+     *
+     * @param l Literal to be added
+     */
     void addLiteral(const std::string &l) {
-        if(l.empty()) return;
+        if (l.empty()) return;
 
         literal_ += ",";
         literal_ += l;
@@ -134,7 +122,6 @@ public:
     }
 };
 
-}
-}
-}
-
+}  // namespace core
+}  // namespace diametercodec
+}  // namespace ert

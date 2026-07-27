@@ -40,107 +40,73 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
 #include <stdexcept>
+#include <string>
 
 // Project
-#include <nlohmann/json.hpp>
 #include <ert/diametercodec/core/defines.hpp>
+#include <nlohmann/json.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
 class Dictionary;
 
 /**
-* AVP rule information
-*/
+ * AVP rule information
+ */
 class AvpRule {
-
-public:
-
+   public:
     struct Presence {
-        enum _v {
-            None = -1,
-            Fixed,
-            Mandatory,
-            Optional
-        };
+        enum _v { None = -1, Fixed, Mandatory, Optional };
 
         declare_enum(Presence);
 
         /**
-        * Presence description
-        * @param v Presence type
-        * @return Presence description
-        */
-        static const char* asText(const Presence::_v v) {
-            return asCString(v);
-        }
+         * Presence description
+         * @param v Presence type
+         * @return Presence description
+         */
+        static const char *asText(const Presence::_v v) { return asCString(v); }
     };
 
-private:
-
+   private:
     const Dictionary *dictionary_;
-    core::AvpId avp_id_; // reference
+    core::AvpId avp_id_;  // reference
     Presence::_v presence_;
     std::string qual_;
 
-public:
-
-
+   public:
     AvpRule(const Dictionary *d = nullptr) {
         dictionary_ = d;
         presence_ = Presence::None;
         qual_ = "";
     }
-    ~AvpRule() {};
-
+    ~AvpRule(){};
 
     // getters
     std::string getAvpName(void) const;
-    const Presence::_v & getPresence(void) const {
-        return presence_;
-    }
-    const std::string & getQual(void) const {
-        return qual_;
-    }
+    const Presence::_v &getPresence(void) const { return presence_; }
+    const std::string &getQual(void) const { return qual_; }
 
     // helpers
-    core::AvpId getId(void) const {
-        return avp_id_;
-    }
-    bool isAny(void) const; // generic Avp
-    bool isFixed(void) const {
-        return (presence_ == Presence::Fixed);
-    }
-    bool isMandatory(void) const {
-        return (presence_ == Presence::Mandatory);
-    }
-    bool isOptional(void) const {
-        return (presence_ == Presence::Optional);
-    }
-    int getQualMin(void) const ;
-    int getQualMax(void) const ; // -1 is infinite
+    core::AvpId getId(void) const { return avp_id_; }
+    bool isAny(void) const;  // generic Avp
+    bool isFixed(void) const { return (presence_ == Presence::Fixed); }
+    bool isMandatory(void) const { return (presence_ == Presence::Mandatory); }
+    bool isOptional(void) const { return (presence_ == Presence::Optional); }
+    int getQualMin(void) const;
+    int getQualMax(void) const;  // -1 is infinite
 
     nlohmann::json asJson() const;
 
     // setters
-    void setAvpId(const core::AvpId & ai) {
-        avp_id_ = ai;
-    }
-    void setPresence(const Presence::_v & p) {
-        presence_ = p;
-    }
-    void setQual(const std::string & q);
+    void setAvpId(const core::AvpId &ai) { avp_id_ = ai; }
+    void setPresence(const Presence::_v &p) { presence_ = p; }
+    void setQual(const std::string &q);
 };
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

@@ -45,35 +45,28 @@ SOFTWARE.
 // Project
 #include <ert/diametercodec/core/defines.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace core
-{
+namespace ert {
+namespace diametercodec {
+namespace core {
 
 struct functions {
+    /**
+     * Returns Avp identification as string:
+     * <pre>
+     *           '(<code>,<vendorId>)'
+     * </pre>
+     */
+    static std::string avpIdAsPairString(const AvpId& avpId);
 
     /**
-    * Returns Avp identification as string:
-    * <pre>
-    *           '(<code>,<vendorId>)'
-    * </pre>
-    */
-    static std::string avpIdAsPairString(const AvpId & avpId);
-
-
-    /**
-    * Returns Command identification as string:
-    * <pre>
-    *           '(<code>,request|answer)'
-    * </pre>
-    */
-    static std::string commandIdAsPairString(const CommandId & commandId);
+     * Returns Command identification as string:
+     * <pre>
+     *           '(<code>,request|answer)'
+     * </pre>
+     */
+    static std::string commandIdAsPairString(const CommandId& commandId);
 };
 
-}
-}
-}
-
+}  // namespace core
+}  // namespace diametercodec
+}  // namespace ert

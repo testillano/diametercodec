@@ -40,19 +40,13 @@ SOFTWARE.
 #pragma once
 
 // Standard
+#include <nlohmann/json.hpp>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace json
-{
-namespace schema
-{
+namespace ert {
+namespace diametercodec {
+namespace json {
+namespace schema {
 
 const nlohmann::json diccionary = R"(
 {
@@ -304,8 +298,7 @@ const nlohmann::json message = R"(
 }
 )"_json;
 
-}
-}
-}
-}
-
+}  // namespace schema
+}  // namespace json
+}  // namespace diametercodec
+}  // namespace ert

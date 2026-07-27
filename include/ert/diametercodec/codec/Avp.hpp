@@ -63,51 +63,47 @@ SOFTWARE.
 
 // Standard
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
-#include <stdexcept>
 
 // Project
-#include <nlohmann/json.hpp>
 #include <ert/diametercodec/core/defines.hpp>
+#include <nlohmann/json.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
+namespace ert {
+namespace diametercodec {
 
 // Forward declarations
-namespace stack { class Dictionary; }
+namespace stack {
+class Dictionary;
+}
 
-namespace codec
-{
+namespace codec {
 
 /**
-* Binary AVP encoder/decoder with JSON conversion.
-*
-* This class handles the binary wire format of Diameter AVPs (RFC 6733 §4.1)
-* and provides bidirectional JSON conversion for use in h2diagent.
-*
-* Not to be confused with stack::Avp which holds dictionary metadata.
-*/
+ * Binary AVP encoder/decoder with JSON conversion.
+ *
+ * This class handles the binary wire format of Diameter AVPs (RFC 6733 §4.1)
+ * and provides bidirectional JSON conversion for use in h2diagent.
+ *
+ * Not to be confused with stack::Avp which holds dictionary metadata.
+ */
 class Avp {
-
-public:
-
+   public:
     // Data variant: covers all Diameter base types
-    using Data = std::variant<
-        std::monostate,          // empty / unset
-        int32_t,                 // Integer32, Enumerated
-        int64_t,                 // Integer64
-        uint32_t,                // Unsigned32, Time
-        uint64_t,                // Unsigned64
-        float,                   // Float32
-        double,                  // Float64
-        std::string,             // OctetString, UTF8String, DiameterIdentity, DiameterURI, IPFilterRule, QoSFilterRule, Address (raw)
-        std::vector<Avp>         // Grouped
-    >;
+    using Data = std::variant<std::monostate,   // empty / unset
+                              int32_t,          // Integer32, Enumerated
+                              int64_t,          // Integer64
+                              uint32_t,         // Unsigned32, Time
+                              uint64_t,         // Unsigned64
+                              float,            // Float32
+                              double,           // Float64
+                              std::string,      // OctetString, UTF8String, DiameterIdentity, DiameterURI, IPFilterRule,
+                                                // QoSFilterRule, Address (raw)
+                              std::vector<Avp>  // Grouped
+                              >;
 
     Avp() = default;
 
@@ -120,8 +116,7 @@ public:
 
     // --- JSON conversion ---
     nlohmann::json toJson(const stack::Dictionary& dict) const;
-    static Avp fromJson(const std::string& avpName, const nlohmann::json& value,
-                        const stack::Dictionary& dict);
+    static Avp fromJson(const std::string& avpName, const nlohmann::json& value, const stack::Dictionary& dict);
 
     // --- Accessors ---
     const core::AvpId& getId() const { return id_; }
@@ -153,8 +148,7 @@ public:
     // Compute AVP length (header + data, without padding)
     size_t getLength(const stack::Dictionary& dict) const;
 
-private:
-
+   private:
     core::AvpId id_{0, 0};
     uint8_t flags_{0};
     Data data_;
@@ -169,6 +163,6 @@ private:
     nlohmann::json dataToJson(const stack::Dictionary& dict) const;
 };
 
-}
-}
-}
+}  // namespace codec
+}  // namespace diametercodec
+}  // namespace ert

@@ -37,9 +37,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Standard
 #include <limits.h>
+
 #include <cstdlib>
 #include <regex>
 #include <vector>
@@ -47,16 +47,12 @@ SOFTWARE.
 // Project
 #include <ert/diametercodec/core/MultiRangeExpression.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace core
-{
+namespace ert {
+namespace diametercodec {
+namespace core {
 
 void MultiRangeExpression::refresh(void) {
-    if(literal_.empty()) return;
+    if (literal_.empty()) return;
 
     std::string range;
     unsigned int min, max;
@@ -65,35 +61,31 @@ void MultiRangeExpression::refresh(void) {
     static std::regex commaRgx(R"(,)", std::regex::optimize);
     static std::regex dashRgx(R"(-)", std::regex::optimize);
 
-    auto ranges = std::vector<std::string>(
-                      std::sregex_token_iterator{begin(literal_), end(literal_), commaRgx, -1},
-                      std::sregex_token_iterator{}
-                  );
+    auto ranges = std::vector<std::string>(std::sregex_token_iterator{begin(literal_), end(literal_), commaRgx, -1},
+                                           std::sregex_token_iterator{});
 
-    for(auto ranges_it = ranges.begin(); ranges_it != ranges.end(); ranges_it ++) {
+    for (auto ranges_it = ranges.begin(); ranges_it != ranges.end(); ranges_it++) {
         range = *ranges_it;
 
-        auto borders = std::vector<std::string>(
-                           std::sregex_token_iterator{begin(range), end(range), dashRgx, -1},
-                           std::sregex_token_iterator{}
-                       );
+        auto borders = std::vector<std::string>(std::sregex_token_iterator{begin(range), end(range), dashRgx, -1},
+                                                std::sregex_token_iterator{});
 
         auto borders_it = borders.begin();
 
-        if(borders_it != borders.end()) {
+        if (borders_it != borders.end()) {
             min = atoi(borders_it->c_str());
             max = min;
             borders_it++;
 
-            if(borders_it != borders.end()) {
+            if (borders_it != borders.end()) {
                 max = atoi(borders_it->c_str());
             }
 
             // Update data_:
-            for(unsigned int k = min; k <= max; k++) {
+            for (unsigned int k = min; k <= max; k++) {
                 data_[k] = 0;
 
-                if(k == UINT_MAX/* overflow */) break;
+                if (k == UINT_MAX /* overflow */) break;
             }
         }
     }
@@ -101,40 +93,40 @@ void MultiRangeExpression::refresh(void) {
 
 std::string MultiRangeExpression::getExpandedLiteral(void) const {
     std::string result;
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it;
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it_min(data_.begin());
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it_max(data_.end());
+    std::map<unsigned int, int /*dummy*/>::const_iterator it;
+    std::map<unsigned int, int /*dummy*/>::const_iterator it_min(data_.begin());
+    std::map<unsigned int, int /*dummy*/>::const_iterator it_max(data_.end());
 
-    for(it = it_min; it != it_max; it++) {
+    for (it = it_min; it != it_max; it++) {
         result += std::to_string((*it).first);
         result += ",";
     }
 
     int pos = result.size();
 
-    if(pos) result.erase(pos - 1);
+    if (pos) result.erase(pos - 1);
 
     return (result);
 }
 
 const char *MultiRangeExpression::simplifyLiteral(void) {
-    if(data_.size() == 0) return nullptr;
+    if (data_.size() == 0) return nullptr;
 
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it;
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it_min(data_.begin());
-    std::map < unsigned int, int/*dummy*/ >::const_iterator it_max(data_.end());
+    std::map<unsigned int, int /*dummy*/>::const_iterator it;
+    std::map<unsigned int, int /*dummy*/>::const_iterator it_min(data_.begin());
+    std::map<unsigned int, int /*dummy*/>::const_iterator it_max(data_.end());
     unsigned int min = UINT_MAX;
     unsigned int max = 0;
     unsigned int value;
     unsigned int prevValue = data_.begin()->first;
     literal_ = "";
 
-    for(it = it_min; it != it_max; it++) {
+    for (it = it_min; it != it_max; it++) {
         value = (*it).first;
 
-        if(value < min) min = value;
+        if (value < min) min = value;
 
-        if(value - prevValue > 1) {
+        if (value - prevValue > 1) {
             literal_ += std::to_string(min);
             if (max != min) {
                 literal_ += "-";
@@ -144,14 +136,14 @@ const char *MultiRangeExpression::simplifyLiteral(void) {
             min = value;
         }
 
-        if(value > max) max = value;
+        if (value > max) max = value;
 
         prevValue = value;
     }
 
     literal_ += std::to_string(min);
 
-    if(max != min) {
+    if (max != min) {
         literal_ += "-";
         literal_ += std::to_string(max);
     }
@@ -159,7 +151,6 @@ const char *MultiRangeExpression::simplifyLiteral(void) {
     return literal_.c_str();
 }
 
-}
-}
-}
-
+}  // namespace core
+}  // namespace diametercodec
+}  // namespace ert

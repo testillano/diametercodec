@@ -37,27 +37,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Project
 #include <ert/diametercodec/core/functions.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace core
-{
+namespace ert {
+namespace diametercodec {
+namespace core {
 
 std::string functions::avpIdAsPairString(const AvpId &avpId) {
     return "(" + std::to_string(avpId.first) + "," + std::to_string(avpId.second) + ")";
 }
 
-std::string functions::commandIdAsPairString(const CommandId & commandId) {
+std::string functions::commandIdAsPairString(const CommandId &commandId) {
     return "(" + std::to_string(commandId.first) + "," + (commandId.second ? "request" : "answer") + ")";
 }
 
-}
-}
-}
-
+}  // namespace core
+}  // namespace diametercodec
+}  // namespace ert

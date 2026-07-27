@@ -1,17 +1,15 @@
-#include <ert/diametercodec/json/stacks.hpp>
-#include <ert/diametercodec/stack/Dictionary.hpp>
-#include <ert/diametercodec/codec/Message.hpp>
-#include <nlohmann/json.hpp>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <ert/diametercodec/codec/Message.hpp>
+#include <ert/diametercodec/json/stacks.hpp>
+#include <ert/diametercodec/stack/Dictionary.hpp>
+#include <nlohmann/json.hpp>
+
 class CodecMessage_test : public ::testing::Test {
-public:
+   public:
     ert::diametercodec::stack::Dictionary dict_;
-    CodecMessage_test() {
-        dict_.load(ert::diametercodec::json::stacks::base);
-    }
+    CodecMessage_test() { dict_.load(ert::diametercodec::json::stacks::base); }
 };
 
 // ============================================================================
@@ -70,8 +68,8 @@ TEST_F(CodecMessage_test, headerAccessors) {
     EXPECT_EQ(msg.getId().first, 257u);
     EXPECT_TRUE(msg.getId().second);
     EXPECT_EQ(msg.getApplicationId(), 0u);
-    EXPECT_EQ(msg.getHopByHop(), 305419896u);    // 0x12345678
-    EXPECT_EQ(msg.getEndToEnd(), 2271560481u);    // 0x87654321
+    EXPECT_EQ(msg.getHopByHop(), 305419896u);   // 0x12345678
+    EXPECT_EQ(msg.getEndToEnd(), 2271560481u);  // 0x87654321
 }
 
 // ============================================================================
@@ -86,7 +84,7 @@ TEST_F(CodecMessage_test, isRequestTrue) {
 TEST_F(CodecMessage_test, isRequestFalse) {
     auto ceaJson = buildCerJson();
     ceaJson["_header"]["request"] = false;
-    ceaJson["_header"]["flags"] = 0x40; // P-bit only, no R-bit
+    ceaJson["_header"]["flags"] = 0x40;  // P-bit only, no R-bit
     auto msg = ert::diametercodec::codec::Message::fromJson(ceaJson, dict_);
     EXPECT_FALSE(msg.isRequest());
 }
@@ -110,7 +108,7 @@ TEST_F(CodecMessage_test, setHeaderToAnswer) {
 
     // Same command code
     EXPECT_EQ(answer.getId().first, request.getId().first);
-    EXPECT_FALSE(answer.getId().second); // answer
+    EXPECT_FALSE(answer.getId().second);  // answer
 
     // hbh and e2e copied
     EXPECT_EQ(answer.getHopByHop(), request.getHopByHop());
@@ -282,35 +280,32 @@ TEST_F(CodecMessage_test, decodeTooShortForHeader) {
     // Less than 20 bytes
     std::vector<uint8_t> shortBuf(10, 0);
     ert::diametercodec::codec::Message msg;
-    EXPECT_THROW(msg.decode(shortBuf.data(), shortBuf.size(), dict_),
-                 std::runtime_error);
+    EXPECT_THROW(msg.decode(shortBuf.data(), shortBuf.size(), dict_), std::runtime_error);
 }
 
 TEST_F(CodecMessage_test, decodeTooShortForHeaderExactly19) {
     std::vector<uint8_t> buf(19, 0);
     ert::diametercodec::codec::Message msg;
-    EXPECT_THROW(msg.decode(buf.data(), buf.size(), dict_),
-                 std::runtime_error);
+    EXPECT_THROW(msg.decode(buf.data(), buf.size(), dict_), std::runtime_error);
 }
 
 TEST_F(CodecMessage_test, decodeMessageLengthExceedingBuffer) {
     // Build a valid 20-byte header but message length says 100 bytes
     std::vector<uint8_t> buf(20, 0);
-    buf[0] = 1;   // version
+    buf[0] = 1;  // version
     // message length = 100 in bytes [1..3]
     buf[1] = 0;
     buf[2] = 0;
     buf[3] = 100;
     // flags + code
-    buf[4] = 0x80; // R-bit
+    buf[4] = 0x80;  // R-bit
     buf[5] = 0;
     buf[6] = 1;
-    buf[7] = 1;    // command code = 257
+    buf[7] = 1;  // command code = 257
     // rest is zeros (app-id, hbh, e2e)
 
     ert::diametercodec::codec::Message msg;
-    EXPECT_THROW(msg.decode(buf.data(), buf.size(), dict_),
-                 std::runtime_error);
+    EXPECT_THROW(msg.decode(buf.data(), buf.size(), dict_), std::runtime_error);
 }
 
 // ============================================================================
@@ -408,23 +403,29 @@ TEST_F(CodecMessage_test, headerSetters) {
 TEST_F(CodecMessage_test, decodeMinimalHeaderOnly) {
     // 20-byte message with length=20 (no AVPs)
     std::vector<uint8_t> buf(20, 0);
-    buf[0] = 1;   // version
-    buf[1] = 0;   // length high byte
-    buf[2] = 0;   // length mid byte
-    buf[3] = 20;  // length low byte = 20
-    buf[4] = 0x80; // R-bit set
+    buf[0] = 1;     // version
+    buf[1] = 0;     // length high byte
+    buf[2] = 0;     // length mid byte
+    buf[3] = 20;    // length low byte = 20
+    buf[4] = 0x80;  // R-bit set
     buf[5] = 0;
     buf[6] = 1;
-    buf[7] = 24;   // command code = 280 (DWR) -> 0x000118
+    buf[7] = 24;  // command code = 280 (DWR) -> 0x000118
     // Actually 280 = 0x118 -> buf[5]=0, buf[6]=1, buf[7]=0x18
     buf[5] = 0;
     buf[6] = 1;
     buf[7] = 0x18;
     // app-id = 0
     // hbh = 0x12345678
-    buf[12] = 0x12; buf[13] = 0x34; buf[14] = 0x56; buf[15] = 0x78;
+    buf[12] = 0x12;
+    buf[13] = 0x34;
+    buf[14] = 0x56;
+    buf[15] = 0x78;
     // e2e = 0xDEADBEEF
-    buf[16] = 0xDE; buf[17] = 0xAD; buf[18] = 0xBE; buf[19] = 0xEF;
+    buf[16] = 0xDE;
+    buf[17] = 0xAD;
+    buf[18] = 0xBE;
+    buf[19] = 0xEF;
 
     ert::diametercodec::codec::Message msg;
     EXPECT_NO_THROW(msg.decode(buf.data(), buf.size(), dict_));
@@ -462,14 +463,20 @@ TEST_F(CodecMessage_test, encodePreservesHeaderFields) {
     EXPECT_EQ(wire[6], 0x01);
     EXPECT_EQ(wire[7], 0x01);
     // app-id = 0
-    EXPECT_EQ(wire[8], 0); EXPECT_EQ(wire[9], 0);
-    EXPECT_EQ(wire[10], 0); EXPECT_EQ(wire[11], 0);
+    EXPECT_EQ(wire[8], 0);
+    EXPECT_EQ(wire[9], 0);
+    EXPECT_EQ(wire[10], 0);
+    EXPECT_EQ(wire[11], 0);
     // hbh = 0x12345678
-    EXPECT_EQ(wire[12], 0x12); EXPECT_EQ(wire[13], 0x34);
-    EXPECT_EQ(wire[14], 0x56); EXPECT_EQ(wire[15], 0x78);
+    EXPECT_EQ(wire[12], 0x12);
+    EXPECT_EQ(wire[13], 0x34);
+    EXPECT_EQ(wire[14], 0x56);
+    EXPECT_EQ(wire[15], 0x78);
     // e2e = 0x87654321
-    EXPECT_EQ(wire[16], 0x87); EXPECT_EQ(wire[17], 0x65);
-    EXPECT_EQ(wire[18], 0x43); EXPECT_EQ(wire[19], 0x21);
+    EXPECT_EQ(wire[16], 0x87);
+    EXPECT_EQ(wire[17], 0x65);
+    EXPECT_EQ(wire[18], 0x43);
+    EXPECT_EQ(wire[19], 0x21);
 }
 
 // ============================================================================
@@ -481,9 +488,7 @@ TEST_F(CodecMessage_test, wireLengthFieldMatchesBufferSize) {
     auto wire = msg.encode(dict_);
 
     // Extract length from wire bytes [1..3]
-    uint32_t wireLen = (uint32_t(wire[1]) << 16) |
-                       (uint32_t(wire[2]) << 8) |
-                        uint32_t(wire[3]);
+    uint32_t wireLen = (uint32_t(wire[1]) << 16) | (uint32_t(wire[2]) << 8) | uint32_t(wire[3]);
     EXPECT_EQ(wireLen, wire.size());
 }
 

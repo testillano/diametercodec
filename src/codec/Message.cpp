@@ -44,13 +44,9 @@ SOFTWARE.
 #include <ert/diametercodec/codec/Message.hpp>
 #include <ert/diametercodec/stack/Dictionary.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace codec
-{
+namespace ert {
+namespace diametercodec {
+namespace codec {
 
 // ============================================================================
 // Helpers (same encode/decode helpers as Avp.cpp, duplicated to keep files independent)
@@ -59,13 +55,10 @@ namespace codec
 namespace {
 
 inline uint32_t decode4(const uint8_t* b) {
-    return (uint32_t(b[0]) << 24) | (uint32_t(b[1]) << 16) |
-           (uint32_t(b[2]) << 8)  |  uint32_t(b[3]);
+    return (uint32_t(b[0]) << 24) | (uint32_t(b[1]) << 16) | (uint32_t(b[2]) << 8) | uint32_t(b[3]);
 }
 
-inline uint32_t decode3(const uint8_t* b) {
-    return (uint32_t(b[0]) << 16) | (uint32_t(b[1]) << 8) | uint32_t(b[2]);
-}
+inline uint32_t decode3(const uint8_t* b) { return (uint32_t(b[0]) << 16) | (uint32_t(b[1]) << 8) | uint32_t(b[2]); }
 
 inline void encode4(core::Buffer& out, uint32_t v) {
     out.push_back(static_cast<uint8_t>(v >> 24));
@@ -80,7 +73,7 @@ inline void encode3(core::Buffer& out, uint32_t v) {
     out.push_back(static_cast<uint8_t>(v));
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 // ============================================================================
 // Message::decode
@@ -114,8 +107,7 @@ void Message::decode(const uint8_t* buf, size_t len, const stack::Dictionary& di
     hopByHop_ = decode4(buf + 12);
     endToEnd_ = decode4(buf + 16);
 
-    if (len < msgLen)
-        throw std::runtime_error("Not enough bytes to cover message length");
+    if (len < msgLen) throw std::runtime_error("Not enough bytes to cover message length");
 
     // Decode AVPs
     avps_.clear();
@@ -133,14 +125,16 @@ void Message::decode(const uint8_t* buf, size_t len, const stack::Dictionary& di
 // ============================================================================
 core::Buffer Message::encode(const stack::Dictionary& dict) const {
     core::Buffer out;
-    out.reserve(256); // reasonable initial capacity
+    out.reserve(256);  // reasonable initial capacity
 
     // Version
     out.push_back(version_);
 
     // Message Length placeholder (3 bytes)
     size_t lenPos = out.size();
-    out.push_back(0); out.push_back(0); out.push_back(0);
+    out.push_back(0);
+    out.push_back(0);
+    out.push_back(0);
 
     // Command Flags
     out.push_back(flags_);
@@ -158,12 +152,11 @@ core::Buffer Message::encode(const stack::Dictionary& dict) const {
     encode4(out, endToEnd_);
 
     // AVPs
-    for (const auto& avp : avps_)
-        avp.encode(out, dict);
+    for (const auto& avp : avps_) avp.encode(out, dict);
 
     // Write message length
     uint32_t msgLen = static_cast<uint32_t>(out.size());
-    out[lenPos]     = static_cast<uint8_t>(msgLen >> 16);
+    out[lenPos] = static_cast<uint8_t>(msgLen >> 16);
     out[lenPos + 1] = static_cast<uint8_t>(msgLen >> 8);
     out[lenPos + 2] = static_cast<uint8_t>(msgLen);
 
@@ -175,8 +168,7 @@ core::Buffer Message::encode(const stack::Dictionary& dict) const {
 // ============================================================================
 size_t Message::getLength(const stack::Dictionary& dict) const {
     size_t total = core::MessageHeaderLen;
-    for (const auto& avp : avps_)
-        total += 4 * REQUIRED_WORDS(avp.getLength(dict));
+    for (const auto& avp : avps_) total += 4 * REQUIRED_WORDS(avp.getLength(dict));
     return total;
 }
 
@@ -185,7 +177,7 @@ size_t Message::getLength(const stack::Dictionary& dict) const {
 // ============================================================================
 void Message::setHeaderToAnswer(const Message& request) {
     version_ = request.version_;
-    flags_ = request.flags_ & ~core::MsgFlagRequest; // clear R flag
+    flags_ = request.flags_ & ~core::MsgFlagRequest;  // clear R flag
     id_ = core::CommandId(request.id_.first, false);
     applicationId_ = request.applicationId_;
     hopByHop_ = request.hopByHop_;
@@ -217,15 +209,13 @@ nlohmann::json Message::toJson(const stack::Dictionary& dict) const {
     nlohmann::json result = nlohmann::json::object();
 
     // Header metadata
-    result["_header"] = {
-        {"version", version_},
-        {"flags", flags_},
-        {"command-code", id_.first},
-        {"request", isRequest()},
-        {"application-id", applicationId_},
-        {"hop-by-hop-id", hopByHop_},
-        {"end-to-end-id", endToEnd_}
-    };
+    result["_header"] = {{"version", version_},
+                         {"flags", flags_},
+                         {"command-code", id_.first},
+                         {"request", isRequest()},
+                         {"application-id", applicationId_},
+                         {"hop-by-hop-id", hopByHop_},
+                         {"end-to-end-id", endToEnd_}};
 
     // AVPs as flat JSON object (same as Grouped AVP logic)
     for (const auto& avp : avps_) {
@@ -262,8 +252,10 @@ Message Message::fromJson(const nlohmann::json& j, const stack::Dictionary& dict
             bool req = h.value("request", false);
             msg.id_ = core::CommandId(static_cast<core::U24>(code), req);
             // Set R flag accordingly
-            if (req) msg.flags_ |= core::MsgFlagRequest;
-            else msg.flags_ &= ~core::MsgFlagRequest;
+            if (req)
+                msg.flags_ |= core::MsgFlagRequest;
+            else
+                msg.flags_ &= ~core::MsgFlagRequest;
         }
         if (h.contains("application-id")) msg.applicationId_ = h["application-id"].get<uint32_t>();
         if (h.contains("hop-by-hop-id")) msg.hopByHop_ = h["hop-by-hop-id"].get<uint32_t>();
@@ -274,8 +266,7 @@ Message Message::fromJson(const nlohmann::json& j, const stack::Dictionary& dict
     for (auto& [key, val] : j.items()) {
         if (key == "_header") continue;
         if (val.is_array()) {
-            for (const auto& elem : val)
-                msg.avps_.push_back(Avp::fromJson(key, elem, dict));
+            for (const auto& elem : val) msg.avps_.push_back(Avp::fromJson(key, elem, dict));
         } else {
             msg.avps_.push_back(Avp::fromJson(key, val, dict));
         }
@@ -284,6 +275,6 @@ Message Message::fromJson(const nlohmann::json& j, const stack::Dictionary& dict
     return msg;
 }
 
-}
-}
-}
+}  // namespace codec
+}  // namespace diametercodec
+}  // namespace ert

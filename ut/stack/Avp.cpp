@@ -1,15 +1,13 @@
-#include <ert/diametercodec/json/stacks.hpp>
-#include <ert/diametercodec/stack/Dictionary.hpp>
-#include <ert/diametercodec/stack/Avp.hpp>
-#include <nlohmann/json.hpp>
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <ert/diametercodec/json/stacks.hpp>
+#include <ert/diametercodec/stack/Avp.hpp>
+#include <ert/diametercodec/stack/Dictionary.hpp>
+#include <nlohmann/json.hpp>
 
-class Avp_test : public ::testing::Test
-{
-public:
+class Avp_test : public ::testing::Test {
+   public:
     ert::diametercodec::stack::Dictionary dictionary_{};
     ert::diametercodec::stack::Avp *avp_{};
 
@@ -35,42 +33,28 @@ public:
 };
 
 TEST_F(Avp_test, getId) {
-    ert::diametercodec::core::AvpId id = {2000,200};
+    ert::diametercodec::core::AvpId id = {2000, 200};
     EXPECT_EQ(avp_->getId(), id);
 }
 
-TEST_F(Avp_test, getName) {
-    EXPECT_EQ(avp_->getName(), "Test-AVP");
-}
+TEST_F(Avp_test, getName) { EXPECT_EQ(avp_->getName(), "Test-AVP"); }
 
-TEST_F(Avp_test, getFormatName) {
-    EXPECT_EQ(avp_->getFormatName(), "Enumerated");
-}
+TEST_F(Avp_test, getFormatName) { EXPECT_EQ(avp_->getFormatName(), "Enumerated"); }
 
-TEST_F(Avp_test, vBit) {
-    EXPECT_EQ(avp_->vBit(), true);
-}
+TEST_F(Avp_test, vBit) { EXPECT_EQ(avp_->vBit(), true); }
 
-TEST_F(Avp_test, mBit) {
-    EXPECT_EQ(avp_->mBit(), true);
-}
+TEST_F(Avp_test, mBit) { EXPECT_EQ(avp_->mBit(), true); }
 
-TEST_F(Avp_test, getEnums) {
-    EXPECT_EQ(std::string(avp_->getEnums()), "1-5");
-}
+TEST_F(Avp_test, getEnums) { EXPECT_EQ(std::string(avp_->getEnums()), "1-5"); }
 
-TEST_F(Avp_test, isChild) {
-    EXPECT_FALSE(avp_->isChild({100,0}));
-}
+TEST_F(Avp_test, isChild) { EXPECT_FALSE(avp_->isChild({100, 0})); }
 
 TEST_F(Avp_test, getFormat) {
     const ert::diametercodec::stack::Format *format = avp_->getFormat();
     EXPECT_EQ(format->getName(), "Enumerated");
 }
 
-TEST_F(Avp_test, getAlias) {
-    EXPECT_EQ("two", std::string(avp_->getAlias("2")));
-}
+TEST_F(Avp_test, getAlias) { EXPECT_EQ("two", std::string(avp_->getAlias("2"))); }
 
 TEST_F(Avp_test, addLabel) {
     ert::diametercodec::stack::Avp::label_container labels = avp_->labels();
@@ -88,20 +72,20 @@ TEST_F(Avp_test, addAvpRuleOnGrouped) {
     ert::diametercodec::stack::Avp *groupedAvp = dictionary_.getAvp("Vendor-Specific-Application-Id");
 
     auto avpRule = new ert::diametercodec::stack::AvpRule(&dictionary_);
-    ert::diametercodec::core::AvpId id(258,0); // Auth-Application-Id
+    ert::diametercodec::core::AvpId id(258, 0);  // Auth-Application-Id
     avpRule->setAvpId(id);
     avpRule->setPresence(ert::diametercodec::stack::AvpRule::Presence::Optional);
     avpRule->setQual("1*");
-    EXPECT_THROW(groupedAvp->addAvpRule(*avpRule), std::runtime_error); // Cannot add two rules ...
-    id = {1,0}; // User-Name
+    EXPECT_THROW(groupedAvp->addAvpRule(*avpRule), std::runtime_error);  // Cannot add two rules ...
+    id = {1, 0};                                                         // User-Name
     avpRule->setAvpId(id);
     avpRule->setPresence(ert::diametercodec::stack::AvpRule::Presence::Optional);
-    groupedAvp->addAvpRule(*avpRule); // no exception in this case
+    groupedAvp->addAvpRule(*avpRule);  // no exception in this case
 }
 
 TEST_F(Avp_test, addAvpRuleOnNonGrouped) {
     auto avpRule = new ert::diametercodec::stack::AvpRule(&dictionary_);
-    ert::diametercodec::core::AvpId id(258,0); // Auth-Application-Id
+    ert::diametercodec::core::AvpId id(258, 0);  // Auth-Application-Id
     avpRule->setAvpId(id);
     avpRule->setPresence(ert::diametercodec::stack::AvpRule::Presence::Optional);
     avpRule->setQual("1*");
@@ -115,11 +99,10 @@ TEST_F(Avp_test, allowEnum) {
     EXPECT_TRUE(avp_->allowEnum(6));
 }
 
-TEST_F(Avp_test, hasAliases) {
-    EXPECT_TRUE(avp_->hasAliases());
-}
+TEST_F(Avp_test, hasAliases) { EXPECT_TRUE(avp_->hasAliases()); }
 
 TEST_F(Avp_test, asJson) {
-    const nlohmann::json doc = R"({"code":2000,"m-bit":true,"name":"Test-AVP","single":{"enum":"1-5","format":"Enumerated","label":[{"alias":"one","data":"1"},{"alias":"two","data":"2"},{"alias":"three","data":"3"},{"alias":"four","data":"4"},{"alias":"five","data":"5"}]},"v-bit":true,"vendor-name":"TEST"})"_json;
+    const nlohmann::json doc =
+        R"({"code":2000,"m-bit":true,"name":"Test-AVP","single":{"enum":"1-5","format":"Enumerated","label":[{"alias":"one","data":"1"},{"alias":"two","data":"2"},{"alias":"three","data":"3"},{"alias":"four","data":"4"},{"alias":"five","data":"5"}]},"v-bit":true,"vendor-name":"TEST"})"_json;
     EXPECT_EQ(avp_->asJson(), doc);
 }

@@ -37,9 +37,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // C
-#include <libgen.h> // basename
+#include <libgen.h>  // basename
 #include <signal.h>
 
 // Standard
@@ -51,23 +50,20 @@ SOFTWARE.
 #include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/tracing/Logger.hpp>
 
-
 const char* progname;
 
-
-void sighndl(int signal)
-{
+void sighndl(int signal) {
     std::cout << '\n';
-    LOGWARNING(ert::tracing::Logger::warning(ert::tracing::Logger::asString("Signal received: %d", signal), ERT_FILE_LOCATION));
+    LOGWARNING(ert::tracing::Logger::warning(ert::tracing::Logger::asString("Signal received: %d", signal),
+                                             ERT_FILE_LOCATION));
     switch (signal) {
-    case SIGTERM:
-    case SIGINT:
-        exit(1);
+        case SIGTERM:
+        case SIGINT:
+            exit(1);
     }
 }
 
 int main(int argc, char* argv[]) {
-
     progname = basename(argv[0]);
     ert::tracing::Logger::initialize(progname);
     ert::tracing::Logger::verbose();
@@ -83,4 +79,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-

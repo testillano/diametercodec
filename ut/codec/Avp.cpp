@@ -1,28 +1,24 @@
-#include <ert/diametercodec/json/stacks.hpp>
-#include <ert/diametercodec/stack/Dictionary.hpp>
-#include <ert/diametercodec/codec/Avp.hpp>
-#include <nlohmann/json.hpp>
-
+#include <arpa/inet.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <cstring>
-#include <arpa/inet.h>
+#include <ert/diametercodec/codec/Avp.hpp>
+#include <ert/diametercodec/json/stacks.hpp>
+#include <ert/diametercodec/stack/Dictionary.hpp>
+#include <nlohmann/json.hpp>
 
 using namespace ert::diametercodec;
 
 class CodecAvp_test : public ::testing::Test {
-public:
+   public:
     stack::Dictionary dict_;
-    CodecAvp_test() {
-        dict_.load(json::stacks::base);
-    }
+    CodecAvp_test() { dict_.load(json::stacks::base); }
 
     // Helper: build a raw AVP buffer without vendor bit
     // code(4) + flags(1) + length(3) + data
-    static core::Buffer buildRawAvp(uint32_t code, uint8_t flags,
-                                    const std::vector<uint8_t>& data) {
-        uint32_t avpLen = 8 + data.size(); // header(8) + data
+    static core::Buffer buildRawAvp(uint32_t code, uint8_t flags, const std::vector<uint8_t>& data) {
+        uint32_t avpLen = 8 + data.size();  // header(8) + data
         core::Buffer buf;
         // Code (4 bytes big-endian)
         buf.push_back(static_cast<uint8_t>(code >> 24));
@@ -45,10 +41,9 @@ public:
 
     // Helper: build a raw AVP buffer with vendor bit
     // code(4) + flags(1) + length(3) + vendor-id(4) + data
-    static core::Buffer buildRawAvpWithVendor(uint32_t code, uint8_t flags,
-                                              uint32_t vendorId,
+    static core::Buffer buildRawAvpWithVendor(uint32_t code, uint8_t flags, uint32_t vendorId,
                                               const std::vector<uint8_t>& data) {
-        uint32_t avpLen = 12 + data.size(); // header(12) + data
+        uint32_t avpLen = 12 + data.size();  // header(12) + data
         core::Buffer buf;
         // Code
         buf.push_back(static_cast<uint8_t>(code >> 24));
@@ -76,8 +71,8 @@ public:
 
     // Helper: encode uint32 to big-endian bytes
     static std::vector<uint8_t> u32bytes(uint32_t v) {
-        return {static_cast<uint8_t>(v >> 24), static_cast<uint8_t>(v >> 16),
-                static_cast<uint8_t>(v >> 8), static_cast<uint8_t>(v)};
+        return {static_cast<uint8_t>(v >> 24), static_cast<uint8_t>(v >> 16), static_cast<uint8_t>(v >> 8),
+                static_cast<uint8_t>(v)};
     }
 
     // Helper: encode int32 to big-endian bytes
@@ -246,7 +241,7 @@ TEST_F(CodecAvp_test, DecodeEncodeRoundtrip_AddressIPv4) {
     // Family(2) + IPv4(4) = 6 bytes
     uint8_t ipv4[4];
     inet_pton(AF_INET, "192.168.1.100", ipv4);
-    std::vector<uint8_t> data = {0x00, 0x01}; // family = 1 (IPv4)
+    std::vector<uint8_t> data = {0x00, 0x01};  // family = 1 (IPv4)
     data.insert(data.end(), ipv4, ipv4 + 4);
     auto raw = buildRawAvp(257, core::AvpFlagMandatory, data);
 
@@ -264,7 +259,7 @@ TEST_F(CodecAvp_test, DecodeEncodeRoundtrip_AddressIPv6) {
     // Family(2) + IPv6(16) = 18 bytes
     uint8_t ipv6[16];
     inet_pton(AF_INET6, "2001:db8::1", ipv6);
-    std::vector<uint8_t> data = {0x00, 0x02}; // family = 2 (IPv6)
+    std::vector<uint8_t> data = {0x00, 0x02};  // family = 2 (IPv6)
     data.insert(data.end(), ipv6, ipv6 + 16);
     auto raw = buildRawAvp(257, core::AvpFlagMandatory, data);
 
@@ -295,7 +290,7 @@ TEST_F(CodecAvp_test, DecodeEncodeRoundtrip_Time) {
 
 // --- Enumerated: Disconnect-Cause (273, 0) ---
 TEST_F(CodecAvp_test, DecodeEncodeRoundtrip_Enumerated) {
-    int32_t value = 1; // BUSY
+    int32_t value = 1;  // BUSY
     auto raw = buildRawAvp(273, core::AvpFlagMandatory, s32bytes(value));
 
     codec::Avp avp;
@@ -484,7 +479,7 @@ TEST_F(CodecAvp_test, ToJson_Time_UnixEpoch) {
 }
 
 TEST_F(CodecAvp_test, ToJson_Enumerated) {
-    int32_t value = 2; // DO_NOT_WANT_TO_TALK_TO_YOU
+    int32_t value = 2;  // DO_NOT_WANT_TO_TALK_TO_YOU
     auto raw = buildRawAvp(273, core::AvpFlagMandatory, s32bytes(value));
 
     codec::Avp avp;
@@ -607,7 +602,7 @@ TEST_F(CodecAvp_test, FromJson_AddressIPv6) {
 }
 
 TEST_F(CodecAvp_test, FromJson_Time) {
-    uint32_t unixTs = 1609459200U; // 2021-01-01
+    uint32_t unixTs = 1609459200U;  // 2021-01-01
     nlohmann::json value = unixTs;
     codec::Avp avp = codec::Avp::fromJson("Event-Timestamp", value, dict_);
     EXPECT_EQ(avp.getId(), (core::AvpId{55, 0}));
@@ -616,17 +611,14 @@ TEST_F(CodecAvp_test, FromJson_Time) {
 }
 
 TEST_F(CodecAvp_test, FromJson_Enumerated) {
-    nlohmann::json value = 0; // REBOOTING
+    nlohmann::json value = 0;  // REBOOTING
     codec::Avp avp = codec::Avp::fromJson("Disconnect-Cause", value, dict_);
     EXPECT_EQ(avp.getId(), (core::AvpId{273, 0}));
     EXPECT_EQ(avp.getInteger32(), 0);
 }
 
 TEST_F(CodecAvp_test, FromJson_Grouped) {
-    nlohmann::json value = {
-        {"Subscription-Id-Type", 2},
-        {"Subscription-Id-Data", "sip:user@example.com"}
-    };
+    nlohmann::json value = {{"Subscription-Id-Type", 2}, {"Subscription-Id-Data", "sip:user@example.com"}};
     codec::Avp avp = codec::Avp::fromJson("Subscription-Id", value, dict_);
     EXPECT_EQ(avp.getId(), (core::AvpId{443, 0}));
 
@@ -664,8 +656,7 @@ TEST_F(CodecAvp_test, FromJson_IPFilterRule) {
 
 TEST_F(CodecAvp_test, FromJson_UnknownAvp_Throws) {
     nlohmann::json value = 42;
-    EXPECT_THROW(codec::Avp::fromJson("NonExistent-AVP", value, dict_),
-                 std::runtime_error);
+    EXPECT_THROW(codec::Avp::fromJson("NonExistent-AVP", value, dict_), std::runtime_error);
 }
 
 // ============================================================================
@@ -712,7 +703,7 @@ TEST_F(CodecAvp_test, JsonRoundtrip_Integer64) {
 }
 
 TEST_F(CodecAvp_test, JsonRoundtrip_Unsigned64) {
-    nlohmann::json input = 18446744073709551615ULL; // max uint64
+    nlohmann::json input = 18446744073709551615ULL;  // max uint64
     codec::Avp avp1 = codec::Avp::fromJson("Accounting-Sub-Session-Id", input, dict_);
 
     core::Buffer buf;
@@ -804,7 +795,7 @@ TEST_F(CodecAvp_test, JsonRoundtrip_Time) {
 }
 
 TEST_F(CodecAvp_test, JsonRoundtrip_Enumerated) {
-    nlohmann::json input = 1; // BUSY
+    nlohmann::json input = 1;  // BUSY
     codec::Avp avp1 = codec::Avp::fromJson("Disconnect-Cause", input, dict_);
 
     core::Buffer buf;
@@ -817,10 +808,7 @@ TEST_F(CodecAvp_test, JsonRoundtrip_Enumerated) {
 }
 
 TEST_F(CodecAvp_test, JsonRoundtrip_Grouped) {
-    nlohmann::json input = {
-        {"Subscription-Id-Type", 3},
-        {"Subscription-Id-Data", "user@nai.example"}
-    };
+    nlohmann::json input = {{"Subscription-Id-Type", 3}, {"Subscription-Id-Data", "user@nai.example"}};
     codec::Avp avp1 = codec::Avp::fromJson("Subscription-Id", input, dict_);
 
     core::Buffer buf;
@@ -873,9 +861,9 @@ TEST_F(CodecAvp_test, Error_BufferTooShortForHeader) {
 TEST_F(CodecAvp_test, Error_BufferTooShortForVendorHeader) {
     // Has vendor bit set but only 8 bytes (needs 12)
     std::vector<uint8_t> buf = {
-        0x00, 0x00, 0x00, 0x1B, // code = 27
-        0xC0,                   // flags: vendor(0x80) + mandatory(0x40)
-        0x00, 0x00, 0x0C,       // length = 12 (with vendor header)
+        0x00, 0x00, 0x00, 0x1B,  // code = 27
+        0xC0,                    // flags: vendor(0x80) + mandatory(0x40)
+        0x00, 0x00, 0x0C,        // length = 12 (with vendor header)
     };
     codec::Avp avp;
     EXPECT_THROW(avp.decode(buf.data(), buf.size(), dict_), std::runtime_error);
@@ -884,10 +872,10 @@ TEST_F(CodecAvp_test, Error_BufferTooShortForVendorHeader) {
 TEST_F(CodecAvp_test, Error_TruncatedData) {
     // AVP header says length=12 (8 header + 4 data) but buffer only has 10 bytes
     std::vector<uint8_t> buf = {
-        0x00, 0x00, 0x00, 0x1B, // code = 27
-        0x40,                   // flags: mandatory
-        0x00, 0x00, 0x0C,       // length = 12
-        0x00, 0x00              // only 2 bytes of data (need 4)
+        0x00, 0x00, 0x00, 0x1B,  // code = 27
+        0x40,                    // flags: mandatory
+        0x00, 0x00, 0x0C,        // length = 12
+        0x00, 0x00               // only 2 bytes of data (need 4)
     };
     codec::Avp avp;
     EXPECT_THROW(avp.decode(buf.data(), buf.size(), dict_), std::runtime_error);
@@ -896,10 +884,10 @@ TEST_F(CodecAvp_test, Error_TruncatedData) {
 TEST_F(CodecAvp_test, Error_AvpLengthSmallerThanHeader) {
     // AVP length field claims 4 which is less than minimum header (8)
     std::vector<uint8_t> buf = {
-        0x00, 0x00, 0x00, 0x1B, // code = 27
-        0x40,                   // flags: mandatory
-        0x00, 0x00, 0x04,       // length = 4 (invalid, less than header)
-        0x00, 0x00, 0x00, 0x00  // extra bytes
+        0x00, 0x00, 0x00, 0x1B,  // code = 27
+        0x40,                    // flags: mandatory
+        0x00, 0x00, 0x04,        // length = 4 (invalid, less than header)
+        0x00, 0x00, 0x00, 0x00   // extra bytes
     };
     codec::Avp avp;
     EXPECT_THROW(avp.decode(buf.data(), buf.size(), dict_), std::runtime_error);
@@ -962,7 +950,7 @@ TEST_F(CodecAvp_test, Flags_NoFlagsSet) {
 TEST_F(CodecAvp_test, Flags_VendorBitDecoded) {
     // Manually build an AVP with vendor bit set (vendor-id=94, code=9999)
     // This won't be in dictionary so it's "unknown" but vendor bit parsing works
-    std::vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01}; // 4 bytes of data
+    std::vector<uint8_t> data = {0x00, 0x00, 0x00, 0x01};  // 4 bytes of data
     auto raw = buildRawAvpWithVendor(9999, core::AvpFlagMandatory, 94, data);
 
     codec::Avp avp;
@@ -987,9 +975,8 @@ TEST_F(CodecAvp_test, Flags_VendorBitEncoded) {
     EXPECT_EQ(buf[4] & core::AvpFlagMandatory, core::AvpFlagMandatory);
 
     // Verify header length is 12 (with vendor)
-    uint32_t encodedLen = (uint32_t(buf[5]) << 16) |
-                          (uint32_t(buf[6]) << 8) | uint32_t(buf[7]);
-    EXPECT_EQ(encodedLen, 12u + 4u); // header(12) + data("test" = 4 bytes)
+    uint32_t encodedLen = (uint32_t(buf[5]) << 16) | (uint32_t(buf[6]) << 8) | uint32_t(buf[7]);
+    EXPECT_EQ(encodedLen, 12u + 4u);  // header(12) + data("test" = 4 bytes)
 }
 
 TEST_F(CodecAvp_test, Flags_PreservedOnDecodeEncode) {
@@ -1022,9 +1009,9 @@ TEST_F(CodecAvp_test, Padding_NoDataNoPadding) {
 
 TEST_F(CodecAvp_test, Padding_1ByteData_3BytesPadding) {
     // 1-byte data: header(8) + data(1) = 9 -> padded to 12
-    std::vector<uint8_t> data = {0x41}; // 'A'
+    std::vector<uint8_t> data = {0x41};  // 'A'
     auto raw = buildRawAvp(1, core::AvpFlagMandatory, data);
-    EXPECT_EQ(raw.size(), 12u); // 9 padded to 12
+    EXPECT_EQ(raw.size(), 12u);  // 9 padded to 12
 
     codec::Avp avp;
     size_t consumed = avp.decode(raw.data(), raw.size(), dict_);
@@ -1083,7 +1070,7 @@ TEST_F(CodecAvp_test, Padding_5ByteData_3BytesPadding) {
 
 TEST_F(CodecAvp_test, Padding_PaddingBytesAreZero) {
     // Verify padding bytes are 0x00
-    std::string value = "Hi"; // 2 bytes -> needs 2 bytes padding
+    std::string value = "Hi";  // 2 bytes -> needs 2 bytes padding
     std::vector<uint8_t> data(value.begin(), value.end());
     auto raw = buildRawAvp(1, core::AvpFlagMandatory, data);
 
@@ -1118,8 +1105,7 @@ TEST_F(CodecAvp_test, Padding_VendorAvpAlignment) {
 // ============================================================================
 
 TEST_F(CodecAvp_test, GetName_Known) {
-    codec::Avp avp = codec::Avp::fromJson("Session-Timeout",
-                                           nlohmann::json(100), dict_);
+    codec::Avp avp = codec::Avp::fromJson("Session-Timeout", nlohmann::json(100), dict_);
     EXPECT_EQ(avp.getName(dict_), "Session-Timeout");
 }
 
@@ -1140,29 +1126,25 @@ TEST_F(CodecAvp_test, GetName_UnknownWithVendor) {
 }
 
 TEST_F(CodecAvp_test, GetLength_Unsigned32) {
-    codec::Avp avp = codec::Avp::fromJson("Session-Timeout",
-                                           nlohmann::json(100), dict_);
+    codec::Avp avp = codec::Avp::fromJson("Session-Timeout", nlohmann::json(100), dict_);
     // header(8) + data(4) = 12
     EXPECT_EQ(avp.getLength(dict_), 12u);
 }
 
 TEST_F(CodecAvp_test, GetLength_UTF8String) {
-    codec::Avp avp = codec::Avp::fromJson("User-Name",
-                                           nlohmann::json("hello"), dict_);
+    codec::Avp avp = codec::Avp::fromJson("User-Name", nlohmann::json("hello"), dict_);
     // header(8) + data(5) = 13
     EXPECT_EQ(avp.getLength(dict_), 13u);
 }
 
 TEST_F(CodecAvp_test, GetLength_AddressIPv4) {
-    codec::Avp avp = codec::Avp::fromJson("Host-IP-Address",
-                                           nlohmann::json("1.2.3.4"), dict_);
+    codec::Avp avp = codec::Avp::fromJson("Host-IP-Address", nlohmann::json("1.2.3.4"), dict_);
     // header(8) + family(2) + ipv4(4) = 14
     EXPECT_EQ(avp.getLength(dict_), 14u);
 }
 
 TEST_F(CodecAvp_test, GetLength_AddressIPv6) {
-    codec::Avp avp = codec::Avp::fromJson("Host-IP-Address",
-                                           nlohmann::json("::1"), dict_);
+    codec::Avp avp = codec::Avp::fromJson("Host-IP-Address", nlohmann::json("::1"), dict_);
     // header(8) + family(2) + ipv6(16) = 26
     EXPECT_EQ(avp.getLength(dict_), 26u);
 }
@@ -1172,7 +1154,7 @@ TEST_F(CodecAvp_test, GetLength_AddressIPv6) {
 // ============================================================================
 
 class CodecAvpFloat_test : public ::testing::Test {
-public:
+   public:
     stack::Dictionary dict_;
     CodecAvpFloat_test() {
         dict_.load(json::stacks::base);
@@ -1198,8 +1180,7 @@ public:
     }
 
     // Reuse helpers from CodecAvp_test
-    static core::Buffer buildRawAvp(uint32_t code, uint8_t flags,
-                                    const std::vector<uint8_t>& data) {
+    static core::Buffer buildRawAvp(uint32_t code, uint8_t flags, const std::vector<uint8_t>& data) {
         uint32_t avpLen = 8 + data.size();
         core::Buffer buf;
         buf.push_back(static_cast<uint8_t>(code >> 24));
@@ -1219,8 +1200,8 @@ public:
     static std::vector<uint8_t> f32bytes(float v) {
         uint32_t u;
         std::memcpy(&u, &v, 4);
-        return {static_cast<uint8_t>(u >> 24), static_cast<uint8_t>(u >> 16),
-                static_cast<uint8_t>(u >> 8), static_cast<uint8_t>(u)};
+        return {static_cast<uint8_t>(u >> 24), static_cast<uint8_t>(u >> 16), static_cast<uint8_t>(u >> 8),
+                static_cast<uint8_t>(u)};
     }
 
     static std::vector<uint8_t> f64bytes(double v) {
@@ -1348,7 +1329,7 @@ TEST_F(CodecAvpFloat_test, JsonRoundtrip_Float64) {
 }
 
 TEST_F(CodecAvpFloat_test, Error_Float32_WrongDataLength) {
-    std::vector<uint8_t> data = {0x00, 0x01}; // 2 bytes instead of 4
+    std::vector<uint8_t> data = {0x00, 0x01};  // 2 bytes instead of 4
     auto raw = buildRawAvp(60001, core::AvpFlagMandatory, data);
 
     codec::Avp avp;
@@ -1356,7 +1337,7 @@ TEST_F(CodecAvpFloat_test, Error_Float32_WrongDataLength) {
 }
 
 TEST_F(CodecAvpFloat_test, Error_Float64_WrongDataLength) {
-    std::vector<uint8_t> data = {0x00, 0x01, 0x02, 0x03}; // 4 bytes instead of 8
+    std::vector<uint8_t> data = {0x00, 0x01, 0x02, 0x03};  // 4 bytes instead of 8
     auto raw = buildRawAvp(60002, core::AvpFlagMandatory, data);
 
     codec::Avp avp;

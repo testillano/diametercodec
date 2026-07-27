@@ -72,30 +72,26 @@ SOFTWARE.
 #include <vector>
 
 // Project
-#include <nlohmann/json.hpp>
-#include <ert/diametercodec/core/defines.hpp>
 #include <ert/diametercodec/codec/Avp.hpp>
+#include <ert/diametercodec/core/defines.hpp>
+#include <nlohmann/json.hpp>
 
+namespace ert {
+namespace diametercodec {
 
-namespace ert
-{
-namespace diametercodec
-{
+namespace stack {
+class Dictionary;
+}
 
-namespace stack { class Dictionary; }
-
-namespace codec
-{
+namespace codec {
 
 /**
-* Binary Diameter message encoder/decoder with JSON conversion.
-*
-* Handles the 20-byte message header (RFC 6733 §3) and the AVP payload.
-*/
+ * Binary Diameter message encoder/decoder with JSON conversion.
+ *
+ * Handles the 20-byte message header (RFC 6733 §3) and the AVP payload.
+ */
 class Message {
-
-public:
-
+   public:
     Message() = default;
 
     // --- Decode from binary wire format ---
@@ -138,13 +134,15 @@ public:
     const Avp* getAvp(const std::string& name, const stack::Dictionary& dict) const;
 
     // Add AVP
-    Avp& addAvp() { avps_.emplace_back(); return avps_.back(); }
+    Avp& addAvp() {
+        avps_.emplace_back();
+        return avps_.back();
+    }
 
     // Compute total message length
     size_t getLength(const stack::Dictionary& dict) const;
 
-private:
-
+   private:
     uint8_t version_{1};
     uint8_t flags_{0};
     core::CommandId id_{0, false};
@@ -154,6 +152,6 @@ private:
     std::vector<Avp> avps_;
 };
 
-}
-}
-}
+}  // namespace codec
+}  // namespace diametercodec
+}  // namespace ert

@@ -40,44 +40,37 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
 #include <stdexcept>
+#include <string>
 
 // Project
-#include <nlohmann/json.hpp>
-#include <ert/diametercodec/core/defines.hpp>
 #include <ert/diametercodec/core/MultiRangeExpression.hpp>
+#include <ert/diametercodec/core/defines.hpp>
 #include <ert/diametercodec/stack/AvpRule.hpp>
+#include <nlohmann/json.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
 class Format;
 class Dictionary;
 
-typedef std::map < int /*position*/, AvpRule > avprule_container;
+typedef std::map<int /*position*/, AvpRule> avprule_container;
 
 /**
-* Avp Reference information
-*/
+ * Avp Reference information
+ */
 class Avp {
-
-public:
-
+   public:
     struct lessLabel {
         bool operator()(const std::string &d1, const std::string &d2) const {
             return (atoi(d1.c_str()) < atoi(d2.c_str()));
         }
     };
-    typedef std::map < std::string /* data */, std::string /* alias */, lessLabel > label_container;
+    typedef std::map<std::string /* data */, std::string /* alias */, lessLabel> label_container;
 
-private:
-
+   private:
     const Dictionary *dictionary_;
     core::AvpId id_;
     std::string name_;
@@ -92,7 +85,7 @@ private:
     label_container labels_;
 
     // Grouped:
-    std::map <int /*position*/, AvpRule > avprules_;
+    std::map<int /*position*/, AvpRule> avprules_;
     bool allow_fixed_rule_;
     int avprule_position_;
 
@@ -104,8 +97,7 @@ private:
         avprule_position_ = 0;
     }
 
-public:
-
+   public:
     Avp(const Dictionary *d = nullptr) {
         dictionary_ = d;
         name_ = "";
@@ -115,100 +107,68 @@ public:
         m_bit_ = true;
         _initializeEnumsLabelsAndRules();
     }
-    ~Avp() {};
-
+    ~Avp(){};
 
     // get
-    const core::AvpId & getId(void) const {
-        return id_;
-    }
-    const std::string & getName(void) const {
-        return name_;
-    }
-    const std::string & getFormatName(void) const {
-        return format_name_;
-    }
+    const core::AvpId &getId(void) const { return id_; }
+    const std::string &getName(void) const { return name_; }
+    const std::string &getFormatName(void) const { return format_name_; }
 
-    bool vBit(void) const {
-        return v_bit_;
-    }
-    bool mBit(void) const {
-        return m_bit_;
-    }
+    bool vBit(void) const { return v_bit_; }
+    bool mBit(void) const { return m_bit_; }
 
-    const char * getEnums(void) const {
-        return enums_.getLiteral().c_str();
-    }
-    const char * getAlias(const std::string &data) const {
+    const char *getEnums(void) const { return enums_.getLiteral().c_str(); }
+    const char *getAlias(const std::string &data) const {
         auto it = labels_.find(data);
         return ((it != labels_.end()) ? ((*it).second.c_str()) : nullptr);
     }
 
-    const avprule_container &avprules() const {
-        return avprules_;
-    }
+    const avprule_container &avprules() const { return avprules_; }
 
-    const label_container &labels() const {
-        return labels_;
-    }
+    const label_container &labels() const { return labels_; }
 
     // helpers
-    bool allowEnum(int value) const {
-        return enums_.contain(value);
-    }
-    bool hasAliases(void) const {
-        return (labels_.size() != 0);
-    }
-    bool isChild(const core::AvpId & avp) const;
-    const Format * getFormat() const;
+    bool allowEnum(int value) const { return enums_.contain(value); }
+    bool hasAliases(void) const { return (labels_.size() != 0); }
+    bool isChild(const core::AvpId &avp) const;
+    const Format *getFormat() const;
     nlohmann::json asJson() const;
 
     // set
-    void setCode(const core::S32 & c) {
-        if(c < 0) throw std::runtime_error("Negative avp-code not allowed");
+    void setCode(const core::S32 &c) {
+        if (c < 0) throw std::runtime_error("Negative avp-code not allowed");
 
         id_.first = c;
     }
 
-    void setVendorId(const core::S32 & v) {
-        if(v < 0) throw std::runtime_error("Negative vendor-id not allowed");
+    void setVendorId(const core::S32 &v) {
+        if (v < 0) throw std::runtime_error("Negative vendor-id not allowed");
 
         id_.second = v;
     }
 
-    void setName(const std::string & n) {
-        if(n == "") throw std::runtime_error("Empty avp-name string not allowed");
+    void setName(const std::string &n) {
+        if (n == "") throw std::runtime_error("Empty avp-name string not allowed");
 
         name_ = n;
     }
 
-    void setVendorName(const std::string & vn) {
-        vendor_name_ = vn;
-    }
-    void setFormatName(const std::string & fn) {
-        format_name_ = fn;
-    }
-    void setVBit(bool b = true) {
-        v_bit_ = b;
-    }
-    void setMBit(bool b = true) {
-        m_bit_ = b;
-    }
+    void setVendorName(const std::string &vn) { vendor_name_ = vn; }
+    void setFormatName(const std::string &fn) { format_name_ = fn; }
+    void setVBit(bool b = true) { v_bit_ = b; }
+    void setMBit(bool b = true) { m_bit_ = b; }
 
-    void setEnums(const char * e) {
-        enums_.setLiteral(e);
-    }
-    void addEnums(const char * e) {
+    void setEnums(const char *e) { enums_.setLiteral(e); }
+    void addEnums(const char *e) {
         enums_.addLiteral(e);
         enums_.simplifyLiteral();
     }
 
     // After format configuration:
-    void addLabel(const std::string & data,  const std::string & alias);
-    void addAvpRule(const AvpRule & avpRule);
+    void addLabel(const std::string &data, const std::string &alias);
+    void addAvpRule(const AvpRule &avpRule);
 };
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

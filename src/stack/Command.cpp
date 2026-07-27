@@ -37,41 +37,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Project
-#include <ert/tracing/Logger.hpp>
 #include <ert/diametercodec/stack/Command.hpp>
+#include <ert/tracing/Logger.hpp>
 
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
-
-void Command::addAvpRule(const AvpRule & avpRule) {
-    if(avpRule.isFixed()) {
-        if(!allow_fixed_rule_) {
-            std::string s_ex = ert::tracing::Logger::asString("Incorrect position for fixed avp rule '<%s>' within command '%s'", avpRule.getAvpName().c_str(), getName().c_str());
+void Command::addAvpRule(const AvpRule& avpRule) {
+    if (avpRule.isFixed()) {
+        if (!allow_fixed_rule_) {
+            std::string s_ex =
+                ert::tracing::Logger::asString("Incorrect position for fixed avp rule '<%s>' within command '%s'",
+                                               avpRule.getAvpName().c_str(), getName().c_str());
             s_ex += ". Fixed avp rules must be located at the beginning";
             throw std::runtime_error(s_ex);
         }
-    } else allow_fixed_rule_ = false;
+    } else
+        allow_fixed_rule_ = false;
 
     // Restriction for redefinition (at this same level) of two rules for the same avp:
-    if(isChild(avpRule.getId())) {
-        std::string s_ex = ert::tracing::Logger::asString("Cannot add two rules for avp '%s', at the same level within command '%s'", avpRule.getAvpName().c_str(), getName().c_str());
+    if (isChild(avpRule.getId())) {
+        std::string s_ex =
+            ert::tracing::Logger::asString("Cannot add two rules for avp '%s', at the same level within command '%s'",
+                                           avpRule.getAvpName().c_str(), getName().c_str());
         throw std::runtime_error(s_ex);
     }
 
     avprules_[avprule_position_++] = avpRule;
 }
 
-bool Command::isChild(const core::AvpId & avpId) const {
-    for(auto it: avprules_)
-        if(avpId == (it.second.getId()))
-            return true;
+bool Command::isChild(const core::AvpId& avpId) const {
+    for (auto it : avprules_)
+        if (avpId == (it.second.getId())) return true;
 
     return false;
 }
@@ -88,15 +87,13 @@ nlohmann::json Command::asJson(void) const {
     // Build avprule array
     nlohmann::json aux;
 
-    for(auto it: avprules_)
-        aux.push_back(it.second.asJson());
+    for (auto it : avprules_) aux.push_back(it.second.asJson());
 
     result["avprule"] = aux;
 
     return result;
 }
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

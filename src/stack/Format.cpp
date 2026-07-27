@@ -37,20 +37,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Project
 #include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/diametercodec/stack/Format.hpp>
 
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
-
-assign_enum(Format::Type) = { "Unknown", "Any", "OctetString", "Integer32", "Integer64", "Unsigned32", "Unsigned64", "Float32", "Float64", "Grouped", "Address", "Time", "UTF8String", "DiameterIdentity", "DiameterURI", "Enumerated", "IPFilterRule", "QoSFilterRule", nullptr /* list end indicator */};
+assign_enum(Format::Type) = {
+    "Unknown",     "Any",        "OctetString",  "Integer32",     "Integer64", "Unsigned32", "Unsigned64",
+    "Float32",     "Float64",    "Grouped",      "Address",       "Time",      "UTF8String", "DiameterIdentity",
+    "DiameterURI", "Enumerated", "IPFilterRule", "QoSFilterRule", nullptr /* list end indicator */};
 
 nlohmann::json Format::asJson(void) const {
     nlohmann::json result;
@@ -62,22 +60,20 @@ nlohmann::json Format::asJson(void) const {
 }
 
 Format::Type::_v Format::getBasicType(void) const {
-    if(isDerived()) return dictionary_->getFormat(parent_name_)->getBasicType();
-    if(isReserved())
-        throw std::runtime_error("Develop error: there is no basic format type for reserved type");
+    if (isDerived()) return dictionary_->getFormat(parent_name_)->getBasicType();
+    if (isReserved()) throw std::runtime_error("Develop error: there is no basic format type for reserved type");
 
     return (Format::Type::asEnum(name_));
 }
 
-void Format::setParentName(const std::string & parentName) {
-    const Format * parent = dictionary_->getFormat(parentName);
-    if(parent && !parent->isBasic()) // 'Any' should not be allowed
+void Format::setParentName(const std::string& parentName) {
+    const Format* parent = dictionary_->getFormat(parentName);
+    if (parent && !parent->isBasic())  // 'Any' should not be allowed
         throw std::runtime_error("Only basic diameter format allowed for parent type");
 
     parent_name_ = parentName;
 }
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

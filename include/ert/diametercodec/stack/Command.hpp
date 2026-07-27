@@ -40,29 +40,24 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
 #include <stdexcept>
+#include <string>
 
 // Project
-#include <nlohmann/json.hpp>
 #include <ert/diametercodec/core/defines.hpp>
 #include <ert/diametercodec/stack/Avp.hpp>
 #include <ert/diametercodec/stack/AvpRule.hpp>
 #include <ert/diametercodec/stack/Format.hpp>
+#include <nlohmann/json.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
 /**
-* Command information
-*/
+ * Command information
+ */
 class Command {
-
     core::CommandId id_;
     std::string name_;
     core::U32 application_id_;
@@ -73,73 +68,45 @@ class Command {
     bool allow_fixed_rule_;
     int avprule_position_;
 
-public:
-
+   public:
     Command() {
         avprules_.clear();
         p_bit_ = false;
-        id_ = {0,false};
+        id_ = {0, false};
         allow_fixed_rule_ = true;
         avprule_position_ = 0;
     }
-    ~Command() {};
-
+    ~Command(){};
 
     // get
-    const core::CommandId & getId(void) const {
-        return id_;
-    }
-    const core::U32 & getApplicationId() {
-        return application_id_;
-    }
-    const std::string & getName(void) const {
-        return name_;
-    }
-    bool pBit(void) const {
-        return p_bit_;
-    }
+    const core::CommandId &getId(void) const { return id_; }
+    const core::U32 &getApplicationId() { return application_id_; }
+    const std::string &getName(void) const { return name_; }
+    bool pBit(void) const { return p_bit_; }
 
-    const avprule_container &avprules() const {
-        return avprules_;
-    }
+    const avprule_container &avprules() const { return avprules_; }
 
     // helpers
-    bool isEmpty(void) const {
-        return (!avprules_.size());
-    }
-    bool isRequest(void) const {
-        return (id_.second);
-    }
-    bool isAnswer(void) const {
-        return (!id_.second);
-    }
-    bool isChild(const core::AvpId & avp) const ;
+    bool isEmpty(void) const { return (!avprules_.size()); }
+    bool isRequest(void) const { return (id_.second); }
+    bool isAnswer(void) const { return (!id_.second); }
+    bool isChild(const core::AvpId &avp) const;
 
-
-    nlohmann::json asJson(void) const ;
+    nlohmann::json asJson(void) const;
 
     // set
-    void setCode(const core::U24 & c) {
-        id_.first = c;
-    }
-    void setApplicationId(const core::U32 & ai) {
-        application_id_ = ai;
-    }
-    void setRequest(bool r = true) {
-        id_.second = r;
-    }
-    void setPBit(bool b = true) {
-        p_bit_ = b;
-    }
-    void setName(const std::string & n) {
-        if(n.empty()) throw std::runtime_error("Empty command-name string not allowed");
+    void setCode(const core::U24 &c) { id_.first = c; }
+    void setApplicationId(const core::U32 &ai) { application_id_ = ai; }
+    void setRequest(bool r = true) { id_.second = r; }
+    void setPBit(bool b = true) { p_bit_ = b; }
+    void setName(const std::string &n) {
+        if (n.empty()) throw std::runtime_error("Empty command-name string not allowed");
 
         name_ = n;
     }
-    void addAvpRule(const AvpRule & avpRule);
+    void addAvpRule(const AvpRule &avpRule);
 };
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

@@ -37,17 +37,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Project
 #include <ert/diametercodec/stack/Vendor.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
 nlohmann::json Vendor::asJson(void) const {
     nlohmann::json result;
@@ -58,7 +53,6 @@ nlohmann::json Vendor::asJson(void) const {
     return result;
 }
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

@@ -40,69 +40,54 @@ SOFTWARE.
 #pragma once
 
 // Standard
-#include <string>
 #include <stdexcept>
+#include <string>
 
 // Project
-#include <nlohmann/json.hpp>
 #include <ert/diametercodec/core/defines.hpp>
+#include <nlohmann/json.hpp>
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
 /**
-* Vendor data container
-*/
+ * Vendor data container
+ */
 class Vendor {
     ert::diametercodec::core::S32 code_;
     std::string name_;
 
-public:
-
-    Vendor() {};
-    ~Vendor() {};
-
+   public:
+    Vendor(){};
+    ~Vendor(){};
 
     // getters
-    const ert::diametercodec::core::S32& getCode() const {
-        return code_;
-    }
-    const std::string & getName() const {
-        return name_;
-    }
+    const ert::diametercodec::core::S32& getCode() const { return code_; }
+    const std::string& getName() const { return name_; }
 
     // helpers
-    bool isVendorSpecific() const {
-        return (code_ > 0);
-    }
+    bool isVendorSpecific() const { return (code_ > 0); }
 
     nlohmann::json asJson() const;
 
     // operators
-    friend bool operator == (const Vendor & v1, const Vendor & v2) {
-        return ((v1.getCode() == v2.getCode()));
-    }
+    friend bool operator==(const Vendor& v1, const Vendor& v2) { return ((v1.getCode() == v2.getCode())); }
 
     // set
-    void setCode(const ert::diametercodec::core::S32 & code) {
-        if(code < 0) throw std::runtime_error("Negative vendor-id not allowed");
+    void setCode(const ert::diametercodec::core::S32& code) {
+        if (code < 0) throw std::runtime_error("Negative vendor-id not allowed");
 
         code_ = code;
     }
 
-    void setName(const std::string & name) {
-        if(name.empty()) throw std::runtime_error("Empty vendor-name not allowed");
+    void setName(const std::string& name) {
+        if (name.empty()) throw std::runtime_error("Empty vendor-name not allowed");
 
         name_ = name;
     }
 };
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert

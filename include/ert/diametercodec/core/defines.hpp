@@ -60,7 +60,6 @@ SOFTWARE.
 
 // Project
 
-
 // Defines
 
 // Enum helpers
@@ -89,17 +88,16 @@ SOFTWARE.
  * \ref assign_enum
  * \ref item_enum
  */
-#define declare_enum(name) \
-   static const char* literal[]; \
-   static _v asEnum (const std::string &str) { \
-      for (int ii = 0; literal[ii] != nullptr; ii ++) { \
-         if (std::string(literal[ii]) == str) \
-            return (_v) ii; \
-      } \
-      return None; \
-   } \
-   static _v asEnum (const char *str) { return asEnum (std::string(str)); } \
-   static const char* asCString (const _v v) { return (v != None) ? literal [v]: nullptr; }
+#define declare_enum(name)                                                 \
+    static const char* literal[];                                          \
+    static _v asEnum(const std::string& str) {                             \
+        for (int ii = 0; literal[ii] != nullptr; ii++) {                   \
+            if (std::string(literal[ii]) == str) return (_v)ii;            \
+        }                                                                  \
+        return None;                                                       \
+    }                                                                      \
+    static _v asEnum(const char* str) { return asEnum(std::string(str)); } \
+    static const char* asCString(const _v v) { return (v != None) ? literal[v] : nullptr; }
 /*
    static const char* asNotNullCString (const _v v) { return (v != None) ? literal[v]:"<none>"; } \
    static std::string asList () {\
@@ -125,7 +123,7 @@ SOFTWARE.
  * \ref declare_enum
  * \warning Must include nullptr to indicate the end of values list.
  */
-#define assign_enum(name) const char* name::literal []
+#define assign_enum(name) const char* name::literal[]
 
 ///**
 // * \page item_enum
@@ -133,13 +131,9 @@ SOFTWARE.
 // */
 //#define item_enum(name,ii) name::literal[ii]
 
-
-namespace ert
-{
-namespace diametercodec
-{
-namespace core
-{
+namespace ert {
+namespace diametercodec {
+namespace core {
 
 // Basic types
 //      TYPE                    BITS (bytes)       Format
@@ -169,10 +163,10 @@ typedef long double F80;
 typedef U32 U24;
 
 // pares
-typedef std::pair < S32/*code*/, S32/*vendor-id*/ > AvpId;
-typedef std::pair < U24/*code*/, bool/*request indicator*/ > CommandId;
+typedef std::pair<S32 /*code*/, S32 /*vendor-id*/> AvpId;
+typedef std::pair<U24 /*code*/, bool /*request indicator*/> CommandId;
 
-//typedef std::pair<_avpId_t, U16> par_idAVP_ocurrencia_t;
+// typedef std::pair<_avpId_t, U16> par_idAVP_ocurrencia_t;
 
 typedef unsigned int ApplicationId;
 
@@ -186,11 +180,11 @@ typedef unsigned int EndToEnd;
 using Buffer = std::vector<uint8_t>;
 
 // AVP header lengths (bytes)
-constexpr int AvpHeaderLenWithVendor    = 12; // code(4) + flags(1) + length(3) + vendor-id(4)
+constexpr int AvpHeaderLenWithVendor = 12;    // code(4) + flags(1) + length(3) + vendor-id(4)
 constexpr int AvpHeaderLenWithoutVendor = 8;  // code(4) + flags(1) + length(3)
 
 // Message header length (bytes)
-constexpr int MessageHeaderLen = 20; // version(1) + length(3) + flags(1) + code(3) + app-id(4) + hbh(4) + e2e(4)
+constexpr int MessageHeaderLen = 20;  // version(1) + length(3) + flags(1) + code(3) + app-id(4) + hbh(4) + e2e(4)
 
 // Padding: round up to next 4-byte boundary
 #define REQUIRED_WORDS(bytes) (((bytes) + 3) / 4)
@@ -199,17 +193,15 @@ constexpr int MessageHeaderLen = 20; // version(1) + length(3) + flags(1) + code
 constexpr uint32_t NtpEpochOffset = 2208988800U;
 
 // AVP flags
-constexpr uint8_t AvpFlagVendor    = 0x80;
+constexpr uint8_t AvpFlagVendor = 0x80;
 constexpr uint8_t AvpFlagMandatory = 0x40;
 
 // Message flags
-constexpr uint8_t MsgFlagRequest   = 0x80;
+constexpr uint8_t MsgFlagRequest = 0x80;
 constexpr uint8_t MsgFlagProxiable = 0x40;
-constexpr uint8_t MsgFlagError     = 0x20;
+constexpr uint8_t MsgFlagError = 0x20;
 constexpr uint8_t MsgFlagRetransmit = 0x10;
 
-}
-}
-}
-
-
+}  // namespace core
+}  // namespace diametercodec
+}  // namespace ert

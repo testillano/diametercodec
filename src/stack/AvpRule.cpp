@@ -37,55 +37,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 // Project
-#include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/diametercodec/stack/Avp.hpp>
 #include <ert/diametercodec/stack/AvpRule.hpp>
+#include <ert/diametercodec/stack/Dictionary.hpp>
 
+namespace ert {
+namespace diametercodec {
+namespace stack {
 
-namespace ert
-{
-namespace diametercodec
-{
-namespace stack
-{
+assign_enum(AvpRule::Presence) = {"Fixed", "Mandatory", "Optional", nullptr /* list end indicator */};
 
-assign_enum(AvpRule::Presence) = { "Fixed", "Mandatory", "Optional", nullptr /* list end indicator */};
-
-void AvpRule::setQual(const std::string & q) {
+void AvpRule::setQual(const std::string &q) {
     const char *asterisk = strstr(q.c_str(), "*");
 
-    if((q != "") && (asterisk == nullptr))
-        throw std::runtime_error("Non-empty qualifier must contain '*'");
+    if ((q != "") && (asterisk == nullptr)) throw std::runtime_error("Non-empty qualifier must contain '*'");
 
     qual_ = q;
 }
 
 std::string AvpRule::getAvpName(void) const {
-    const Avp * avp = dictionary_->getAvp(avp_id_);
+    const Avp *avp = dictionary_->getAvp(avp_id_);
     return avp->getName();
 }
 
 bool AvpRule::isAny(void) const {
-    const Avp * avp = dictionary_->getAvp(avp_id_);
-    const Format * format = dictionary_->getFormat(avp->getFormatName());
+    const Avp *avp = dictionary_->getAvp(avp_id_);
+    const Format *format = dictionary_->getFormat(avp->getFormatName());
     return format->isAny();
 }
 
 int AvpRule::getQualMin(void) const {
-    if(qual_ == "") {
-        if(isFixed() || isMandatory()) return 1;
+    if (qual_ == "") {
+        if (isFixed() || isMandatory()) return 1;
 
-        if(isOptional()) return 0;
+        if (isOptional()) return 0;
     }
 
     // Asterisk location
-    const char * c_qual = qual_.c_str();
+    const char *c_qual = qual_.c_str();
     int asterisk_pos = strstr(c_qual, "*") - c_qual;
 
     // '*', '*y'
-    if(asterisk_pos == 0) return 0;
+    if (asterisk_pos == 0) return 0;
 
     // 'x*', 'x*y'
     std::string min = qual_.substr(0, asterisk_pos);  // 'x'
@@ -93,14 +87,14 @@ int AvpRule::getQualMin(void) const {
 }
 
 int AvpRule::getQualMax(void) const {
-    if(qual_ == "") return 1;
+    if (qual_ == "") return 1;
 
     // Asterisk location
-    const char * c_qual = qual_.c_str();
+    const char *c_qual = qual_.c_str();
     int asterisk_pos = strstr(c_qual, "*") - c_qual;
 
     // '*', 'x*'
-    if(asterisk_pos == (qual_.size() - 1)) return -1;  // inf
+    if (asterisk_pos == (qual_.size() - 1)) return -1;  // inf
 
     // '*y', 'x*y'
     std::string max = qual_.substr(asterisk_pos + 1, qual_.size() - asterisk_pos - 1);  // 'y'
@@ -119,7 +113,6 @@ nlohmann::json AvpRule::asJson(void) const {
     return result;
 }
 
-}
-}
-}
-
+}  // namespace stack
+}  // namespace diametercodec
+}  // namespace ert
