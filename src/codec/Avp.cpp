@@ -40,6 +40,7 @@ SOFTWARE.
 // Standard
 #include <arpa/inet.h>
 
+#include <cctype>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
@@ -49,6 +50,7 @@ SOFTWARE.
 #include <ert/diametercodec/stack/Avp.hpp>
 #include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/diametercodec/stack/Format.hpp>
+#include <ert/tracing/Logger.hpp>
 
 namespace ert {
 namespace diametercodec {
@@ -136,9 +138,13 @@ std::string toHex(const uint8_t* data, size_t len) {
 }
 
 core::Buffer fromHex(const std::string& hex) {
+    if (hex.size() % 2 != 0) throw std::runtime_error("Invalid hex string (odd number of digits): '" + hex + "'");
     core::Buffer buf;
     buf.reserve(hex.size() / 2);
-    for (size_t i = 0; i + 1 < hex.size(); i += 2) {
+    for (size_t i = 0; i < hex.size(); i += 2) {
+        if (!std::isxdigit(static_cast<unsigned char>(hex[i])) ||
+            !std::isxdigit(static_cast<unsigned char>(hex[i + 1])))
+            throw std::runtime_error("Invalid hex string (non-hex digit): '" + hex + "'");
         uint8_t byte = static_cast<uint8_t>(std::stoul(hex.substr(i, 2), nullptr, 16));
         buf.push_back(byte);
     }
@@ -177,6 +183,9 @@ void encodeAddress(core::Buffer& out, const std::string& addr) {
 }
 
 }  // anonymous namespace
+
+// Forward declaration (defined below, before Avp::toJson)
+static std::string avpValueTrace(const core::AvpId& id, const Avp::Data& data, const stack::Dictionary& dict);
 
 // ============================================================================
 // Avp::decode
@@ -296,6 +305,12 @@ void Avp::decodeData(const uint8_t* buf, size_t dataLen, const stack::Dictionary
             data_ = std::string(reinterpret_cast<const char*>(buf), dataLen);
             break;
     }
+
+    LOGDEBUG(ert::tracing::Logger::debug(
+        ert::tracing::Logger::asString("Diameter decode AVP '%s' (%s): 0x%s -> %s", getName(dict).c_str(),
+                                       stack::Format::Type::asText(basicType), toHex(buf, dataLen).c_str(),
+                                       avpValueTrace(id_, data_, dict).c_str()),
+        ERT_FILE_LOCATION));
 }
 
 // ============================================================================
@@ -413,6 +428,12 @@ size_t Avp::encodeData(core::Buffer& out, const stack::Dictionary& dict) const {
         }
     }
 
+    LOGDEBUG(ert::tracing::Logger::debug(
+        ert::tracing::Logger::asString("Diameter encode AVP '%s' (%s): %s -> 0x%s", getName(dict).c_str(),
+                                       stack::Format::Type::asText(basicType), avpValueTrace(id_, data_, dict).c_str(),
+                                       toHex(out.data() + start, out.size() - start).c_str()),
+        ERT_FILE_LOCATION));
+
     return out.size() - start;
 }
 
@@ -473,6 +494,56 @@ std::string Avp::getName(const stack::Dictionary& dict) const {
     oss << "avp-" << id_.first;
     if (id_.second != 0) oss << "-" << id_.second;
     return oss.str();
+}
+
+// ============================================================================
+// avpValueTrace: human-readable rendering of an AVP value for debug traces.
+// For Enumerated it appends the dictionary alias/literal when available.
+// ============================================================================
+static std::string avpValueTrace(const core::AvpId& id, const Avp::Data& data, const stack::Dictionary& dict) {
+    auto t = resolveFormatType(id, dict);
+    switch (t) {
+        case stack::Format::Type::Integer32:
+            return std::to_string(std::get<int32_t>(data));
+        case stack::Format::Type::Enumerated: {
+            int32_t v = std::get<int32_t>(data);
+            std::string s = std::to_string(v);
+            const stack::Avp* sa = dict.getAvp(id);
+            const char* alias = sa ? sa->getAlias(std::to_string(v)) : nullptr;
+            if (alias) {
+                s += " (";
+                s += alias;
+                s += ")";
+            }
+            return s;
+        }
+        case stack::Format::Type::Integer64:
+            return std::to_string(std::get<int64_t>(data));
+        case stack::Format::Type::Unsigned32:
+            return std::to_string(std::get<uint32_t>(data));
+        case stack::Format::Type::Unsigned64:
+            return std::to_string(std::get<uint64_t>(data));
+        case stack::Format::Type::Float32:
+            return std::to_string(std::get<float>(data));
+        case stack::Format::Type::Float64:
+            return std::to_string(std::get<double>(data));
+        case stack::Format::Type::Address:
+            return std::get<std::string>(data);
+        case stack::Format::Type::Time:
+            return std::to_string(std::get<uint32_t>(data) - core::NtpEpochOffset) + " (epoch)";
+        case stack::Format::Type::Grouped:
+            return "<grouped>";
+        case stack::Format::Type::UTF8String:
+        case stack::Format::Type::DiameterIdentity:
+        case stack::Format::Type::DiameterURI:
+        case stack::Format::Type::IPFilterRule:
+        case stack::Format::Type::QoSFilterRule:
+            return "\"" + std::get<std::string>(data) + "\"";
+        default: {  // OctetString / Unknown
+            const auto& s = std::get<std::string>(data);
+            return "0x" + toHex(reinterpret_cast<const uint8_t*>(s.data()), s.size());
+        }
+    }
 }
 
 // ============================================================================
