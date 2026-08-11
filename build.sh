@@ -51,11 +51,12 @@ image_tag__dflt=latest
 usage() {
   cat << EOF
 
-  Usage: $0 [--builder|--image]
+  Usage: $0 [--builder|--image|--benchmark]
 
          (no args):   builds everything (--image).
          --builder:   builds deps stage (builder image with all libraries).
          --image:     full build: deps + compile + unit-test image.
+         --benchmark: builds the micro-benchmark image (diametercodec_benchmark).
 
          Environment variables (override any version):
 
@@ -130,6 +131,28 @@ build_image() {
   echo "Built: ${registry}/diametercodec_ut:${tag}"
 }
 
+build_benchmark() {
+  echo
+  echo "=== Build diametercodec_benchmark (micro-benchmark image) ==="
+  echo
+
+  local tag=$(resolve image_tag)
+  local bargs=""
+  bargs+=" --build-arg make_procs=$(resolve make_procs)"
+  bargs+=" --build-arg build_type=$(resolve build_type)"
+  bargs+=" --build-arg ert_logger_ver=$(resolve ert_logger_ver)"
+  bargs+=" --build-arg nlohmann_json_ver=$(resolve nlohmann_json_ver)"
+  bargs+=" --build-arg pboettch_jsonschemavalidator_ver=$(resolve pboettch_jsonschemavalidator_ver)"
+  bargs+=" --build-arg google_test_ver=$(resolve google_test_ver)"
+
+  docker build --target benchmark \
+    -t ${registry}/diametercodec_benchmark:${tag} \
+    ${bargs} ${DBUILD_XTRA_OPTS} .
+
+  echo
+  echo "Built: ${registry}/diametercodec_benchmark:${tag}"
+}
+
 ########
 # MAIN #
 ########
@@ -139,6 +162,9 @@ case "$1" in
     ;;
   --image)
     build_image
+    ;;
+  --benchmark)
+    build_benchmark
     ;;
   -h|--help)
     usage

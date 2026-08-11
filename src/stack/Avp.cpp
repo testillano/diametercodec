@@ -53,7 +53,7 @@ bool Avp::isChild(const core::AvpId& avpId) const {
 
     if (!format->isGrouped()) return false;
 
-    for (auto it : avprules_)
+    for (const auto& it : avprules_)
         if (avpId == (it.second.getId())) return true;
 
     return false;
@@ -122,7 +122,7 @@ nlohmann::json Avp::asJson(void) const {
     if (format->isGrouped()) {
         // Build rules array:
         nlohmann::json aux;
-        for (auto it : avprules_) aux.push_back(it.second.asJson());
+        for (const auto& it : avprules_) aux.push_back(it.second.asJson());
 
         result["grouped"]["avprule"] = aux;
 
@@ -137,7 +137,7 @@ nlohmann::json Avp::asJson(void) const {
         if (hasAliases()) {
             // Build labels array:
             nlohmann::json aux, labelJson;
-            for (auto it : labels_) {
+            for (const auto& it : labels_) {
                 labelJson["data"] = it.first;
                 labelJson["alias"] = it.second;
                 aux.push_back(labelJson);

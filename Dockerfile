@@ -120,3 +120,15 @@ COPY --from=build /code/build/${build_type}/bin/unit-test /opt/unit-test
 
 ENTRYPOINT ["/opt/unit-test"]
 CMD []
+
+# =============================================================================
+# Stage: benchmark (lightweight image for running the micro-benchmark)
+# =============================================================================
+FROM ubuntu:24.04 AS benchmark
+
+ARG build_type=Release
+
+COPY --from=build /code/build/${build_type}/bin/diametercodec-benchmark /opt/diametercodec-benchmark
+
+ENTRYPOINT ["/opt/diametercodec-benchmark"]
+CMD []

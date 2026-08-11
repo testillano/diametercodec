@@ -216,30 +216,30 @@ nlohmann::json Dictionary::asJson(void) const {
     result["name"] = name_;
 
     // Formats
-    for (auto it : formats_) {
+    for (const auto &it : formats_) {
         if (it.second.isReserved()) continue;
         if (it.second.isRFC6733()) continue;  // only user-defined formats are shown
         result["format"].push_back(it.second.asJson());
     }
 
     // Vendors
-    for (auto it : vendors_) result["vendor"].push_back(it.second.asJson());
+    for (const auto &it : vendors_) result["vendor"].push_back(it.second.asJson());
 
     // Avps
-    for (auto it : avps_) {
+    for (const auto &it : avps_) {
         if (it.second.getFormat()->isAny()) continue;  // Generic AVP not shown
 
         result["avp"].push_back(it.second.asJson());
     }
 
     // Commands
-    for (auto it : commands_) result["command"].push_back(it.second.asJson());
+    for (const auto &it : commands_) result["command"].push_back(it.second.asJson());
 
     return result;
 }
 
 void Dictionary::extractFormats(const nlohmann::json &doc) {
-    for (auto it : doc) {
+    for (const auto &it : doc) {
         Format aux(this);  // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
@@ -256,7 +256,7 @@ void Dictionary::extractFormats(const nlohmann::json &doc) {
 }
 
 void Dictionary::extractVendors(const nlohmann::json &doc) {
-    for (auto it : doc) {
+    for (const auto &it : doc) {
         Vendor aux;  // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
@@ -273,7 +273,7 @@ void Dictionary::extractVendors(const nlohmann::json &doc) {
 }
 
 void Dictionary::extractAvps(const nlohmann::json &doc) {
-    for (auto it : doc) {
+    for (const auto &it : doc) {
         Avp aux(this);  // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
@@ -360,7 +360,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
             }
 
             if (label_it != (*single_it).end()) {
-                for (auto l_it : *label_it) {
+                for (const auto &l_it : *label_it) {
                     std::string data = *(l_it.find("data"));
                     std::string alias = *(l_it.find("alias"));
                     // Assignment:
@@ -378,7 +378,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
     }
 
     // Now process grouped ones:
-    for (auto it : doc) {
+    for (const auto &it : doc) {
         auto name_it = it.find("name");
         auto grouped_it = it.find("grouped");
 
@@ -393,7 +393,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
         if (format->isGrouped()) {  // double check
             auto avprule_it = grouped_it->find("avprule");
             AvpRule auxAvpRule(this);  // set everything below (even empty, zeroed, etc.) to avoid reset() function
-            for (auto it : *avprule_it) {
+            for (const auto &it : *avprule_it) {
                 std::string name = *(it.find("name"));
                 std::string type = *(it.find("type"));
                 auto qual_it = it.find("qual");  // optional
@@ -473,7 +473,7 @@ void Dictionary::extractAvps(const nlohmann::json &doc) {
 }
 
 void Dictionary::extractCommands(const nlohmann::json &doc) {
-    for (auto it : doc) {
+    for (const auto &it : doc) {
         Command aux;  // set everything below (even empty, zeroed, etc.) to avoid reset() function
 
         // Mandatory
@@ -494,7 +494,7 @@ void Dictionary::extractCommands(const nlohmann::json &doc) {
         aux.setPBit((pbit_it != it.end()) ? bool(*pbit_it) : false);
 
         AvpRule auxAvpRule(this);  // set everything below (even empty, zeroed, etc.) to avoid reset() function
-        for (auto it : *avprule_it) {
+        for (const auto &it : *avprule_it) {
             std::string name = *(it.find("name"));
             std::string type = *(it.find("type"));
             auto qual_it = it.find("qual");  // optional

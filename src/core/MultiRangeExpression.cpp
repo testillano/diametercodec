@@ -54,7 +54,6 @@ namespace core {
 void MultiRangeExpression::refresh(void) {
     if (literal_.empty()) return;
 
-    std::string range;
     unsigned int min, max;
     data_.clear();
 
@@ -64,9 +63,7 @@ void MultiRangeExpression::refresh(void) {
     auto ranges = std::vector<std::string>(std::sregex_token_iterator{begin(literal_), end(literal_), commaRgx, -1},
                                            std::sregex_token_iterator{});
 
-    for (auto ranges_it = ranges.begin(); ranges_it != ranges.end(); ranges_it++) {
-        range = *ranges_it;
-
+    for (const auto &range : ranges) {
         auto borders = std::vector<std::string>(std::sregex_token_iterator{begin(range), end(range), dashRgx, -1},
                                                 std::sregex_token_iterator{});
 
