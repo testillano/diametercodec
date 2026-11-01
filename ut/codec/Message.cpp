@@ -505,3 +505,83 @@ TEST_F(CodecMessage_test, defaultConstruction) {
     EXPECT_EQ(msg.getEndToEnd(), 0u);
     EXPECT_EQ(msg.avps().size(), 0u);
 }
+
+// ============================================================================
+// AVP order: command rules (ABNF) instead of JSON key (alphabetical) order
+// ============================================================================
+
+static std::vector<std::string> avpNames(const ert::diametercodec::codec::Message& m,
+                                         const ert::diametercodec::stack::Dictionary& d) {
+    std::vector<std::string> names;
+    for (const auto& a : m.avps()) names.push_back(a.getName(d));
+    return names;
+}
+
+TEST_F(CodecMessage_test, fromJsonOrdersAvpsByCommandRules) {
+    // STR: < Session-Id > first, then Origin-Host, Origin-Realm, Destination-Realm,
+    // Auth-Application-Id, Termination-Cause ... (JSON keys are alphabetical).
+    nlohmann::json j = R"({
+        "_header": {"version": 1, "flags": 128, "command-code": 275, "request": true, "application-id": 0},
+        "Termination-Cause": 1,
+        "Auth-Application-Id": 4,
+        "Destination-Realm": "realm.net",
+        "Origin-Realm": "example.com",
+        "Origin-Host": "client.example.com",
+        "Session-Id": "client.example.com;1;1",
+        "avp-99999": "00"
+    })"_json;
+    auto msg = ert::diametercodec::codec::Message::fromJson(j, dict_);
+    std::vector<std::string> expected = {"Session-Id",        "Origin-Host",         "Origin-Realm",
+                                         "Destination-Realm", "Auth-Application-Id", "Termination-Cause",
+                                         "avp-99999"};
+    EXPECT_EQ(avpNames(msg, dict_), expected);
+
+    // Wire order: first AVP after the header is Session-Id (code 263).
+    auto wire = msg.encode(dict_);
+    ASSERT_GT(wire.size(), 24u);
+    EXPECT_EQ((uint32_t(wire[20]) << 24) | (uint32_t(wire[21]) << 16) | (uint32_t(wire[22]) << 8) | wire[23], 263u);
+}
+
+TEST_F(CodecMessage_test, fromJsonWithoutCommandInDictionaryKeepsJsonOrder) {
+    // Unknown command code: no rules, alphabetical (JSON) order is kept.
+    nlohmann::json j = R"({
+        "_header": {"version": 1, "flags": 128, "command-code": 9999, "request": true, "application-id": 0},
+        "Session-Id": "s;1",
+        "Origin-Host": "h"
+    })"_json;
+    auto msg = ert::diametercodec::codec::Message::fromJson(j, dict_);
+    std::vector<std::string> expected = {"Origin-Host", "Session-Id"};
+    EXPECT_EQ(avpNames(msg, dict_), expected);
+}
+
+TEST_F(CodecMessage_test, fromJsonRepeatedAvpsKeepArrayOrder) {
+    nlohmann::json j = R"({
+        "_header": {"version": 1, "flags": 128, "command-code": 275, "request": true, "application-id": 0},
+        "Class": ["03", "01", "02"],
+        "Session-Id": "s;1"
+    })"_json;
+    auto msg = ert::diametercodec::codec::Message::fromJson(j, dict_);
+    ASSERT_EQ(msg.avps().size(), 4u);
+    EXPECT_EQ(msg.avps()[0].getName(dict_), "Session-Id");
+    EXPECT_EQ(msg.avps()[1].getString(), std::string("\x03", 1));
+    EXPECT_EQ(msg.avps()[2].getString(), std::string("\x01", 1));
+    EXPECT_EQ(msg.avps()[3].getString(), std::string("\x02", 1));
+}
+
+// Decoded messages keep the wire order on re-encode (ordering applies to JSON only).
+TEST_F(CodecMessage_test, decodeEncodeKeepsWireOrder) {
+    ert::diametercodec::codec::Message m;
+    m.setVersion(1);
+    m.setFlags(0x80);
+    m.setId({275, true});
+    auto& a = m.addAvp();
+    a = ert::diametercodec::codec::Avp::fromJson("Origin-Host", "h", dict_);
+    auto& b = m.addAvp();
+    b = ert::diametercodec::codec::Avp::fromJson("Session-Id", "s;1", dict_);
+    auto wire = m.encode(dict_);
+    ert::diametercodec::codec::Message decoded;
+    decoded.decode(wire.data(), wire.size(), dict_);
+    EXPECT_EQ(decoded.encode(dict_), wire);
+    std::vector<std::string> expected = {"Origin-Host", "Session-Id"};
+    EXPECT_EQ(avpNames(decoded, dict_), expected);
+}

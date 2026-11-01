@@ -63,6 +63,7 @@ SOFTWARE.
 
 // Standard
 #include <cstdint>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <variant>
@@ -78,7 +79,8 @@ namespace diametercodec {
 // Forward declarations
 namespace stack {
 class Dictionary;
-}
+class AvpRule;
+}  // namespace stack
 
 namespace codec {
 
@@ -116,7 +118,26 @@ class Avp {
 
     // --- JSON conversion ---
     nlohmann::json toJson(const stack::Dictionary& dict) const;
+    /**
+     * Build an AVP from its JSON key and value.
+     *
+     * The key is the dictionary AVP name. For negative testing, a key not in
+     * the dictionary may use the raw form 'avp-<code>' or 'avp-<code>-<vendor>'
+     * (the same names toJson emits for unknown AVPs). A raw AVP data is encoded
+     * verbatim (no format/length check):
+     * - string value: hex of the data bytes; flags = V-bit if vendor != 0.
+     * - object value: {"hex": "<data>", "flags": <0..255>} (flags optional,
+     *   full AVP flags byte; the V-bit decides whether a Vendor-Id is written).
+     * Grouped children are ordered by the dictionary rules (see sortByRules).
+     */
     static Avp fromJson(const std::string& avpName, const nlohmann::json& value, const stack::Dictionary& dict);
+
+    /**
+     * Stable-sort AVPs by the dictionary rule positions (command or grouped
+     * ABNF order: fixed, then the rest as declared). AVPs without a rule go
+     * last keeping their relative order; repeated AVPs keep their order.
+     */
+    static void sortByRules(std::vector<Avp>& avps, const std::map<int, stack::AvpRule>& rules);
 
     // --- Accessors ---
     const core::AvpId& getId() const { return id_; }
@@ -142,7 +163,10 @@ class Avp {
     bool vendorBit() const { return (flags_ & core::AvpFlagVendor) != 0; }
     bool mandatoryBit() const { return (flags_ & core::AvpFlagMandatory) != 0; }
 
-    // Name from dictionary (empty if unknown)
+    // Raw AVP (built from an 'avp-<code>' key): data bytes encoded verbatim
+    bool isRaw() const { return raw_; }
+
+    // Name from dictionary, or 'avp-<code>[-<vendor>]' if unknown or raw
     std::string getName(const stack::Dictionary& dict) const;
 
     // Compute AVP length (header + data, without padding)
@@ -152,6 +176,7 @@ class Avp {
     core::AvpId id_{0, 0};
     uint8_t flags_{0};
     Data data_;
+    bool raw_{false};
 
     // Encode data part into buffer, returns data bytes written
     size_t encodeData(core::Buffer& out, const stack::Dictionary& dict) const;

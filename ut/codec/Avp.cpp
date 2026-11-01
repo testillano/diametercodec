@@ -1343,3 +1343,102 @@ TEST_F(CodecAvpFloat_test, Error_Float64_WrongDataLength) {
     codec::Avp avp;
     EXPECT_THROW(avp.decode(raw.data(), raw.size(), dict_), std::runtime_error);
 }
+
+// ============================================================================
+// Raw AVPs ('avp-<code>[-<vendor>]' keys) for negative testing
+// ============================================================================
+
+TEST_F(CodecAvp_test, RawAvp_UnknownCodeHexString) {
+    codec::Avp avp = codec::Avp::fromJson("avp-99999", nlohmann::json("0000000a"), dict_);
+    EXPECT_TRUE(avp.isRaw());
+    EXPECT_EQ(avp.getId(), (core::AvpId{99999, 0}));
+    EXPECT_EQ(avp.getFlags(), 0);  // no M-bit by default
+    core::Buffer out;
+    avp.encode(out, dict_);
+    ASSERT_EQ(out.size(), 12u);
+    EXPECT_EQ(out[3], 0x9f);  // 99999 = 0x0001869f
+    EXPECT_EQ(out[7], 12);    // length = 8 header + 4 data
+    EXPECT_EQ(out[11], 0x0a);
+    EXPECT_EQ(avp.getLength(dict_), 12u);
+    EXPECT_EQ(avp.getName(dict_), "avp-99999");
+    EXPECT_EQ(avp.toJson(dict_), nlohmann::json("0000000a"));
+}
+
+TEST_F(CodecAvp_test, RawAvp_VendorSetsVBitAndVendorId) {
+    codec::Avp avp = codec::Avp::fromJson("avp-1027-10415", nlohmann::json("01"), dict_);
+    EXPECT_EQ(avp.getFlags(), core::AvpFlagVendor);
+    core::Buffer out;
+    avp.encode(out, dict_);
+    ASSERT_EQ(out.size(), 16u);  // 12 header + 1 data + 3 padding
+    EXPECT_EQ(out[7], 13);       // length excludes padding
+    EXPECT_EQ((uint32_t(out[8]) << 24) | (uint32_t(out[9]) << 16) | (uint32_t(out[10]) << 8) | out[11], 10415u);
+    EXPECT_EQ(avp.getName(dict_), "avp-1027-10415");
+}
+
+// Known code with wrong data length (2 bytes for Unsigned32): encoded verbatim.
+TEST_F(CodecAvp_test, RawAvp_KnownCodeWrongLengthAndFlags) {
+    nlohmann::json v = {{"hex", "0001"}, {"flags", 0}};
+    codec::Avp avp = codec::Avp::fromJson("avp-27", v, dict_);  // Session-Timeout (Unsigned32, M-bit)
+    EXPECT_EQ(avp.getFlags(), 0);                               // M-bit cleared on purpose
+    core::Buffer out;
+    avp.encode(out, dict_);
+    ASSERT_EQ(out.size(), 12u);
+    EXPECT_EQ(out[4], 0);
+    EXPECT_EQ(out[7], 10);  // 8 + 2
+    EXPECT_EQ(avp.getName(dict_), "avp-27");
+    // Decoding it back with the dictionary rejects the wrong length (as a peer would: 5014).
+    codec::Avp decoded;
+    EXPECT_THROW(decoded.decode(out.data(), out.size(), dict_), std::runtime_error);
+}
+
+// Decode of an unknown AVP emits 'avp-<code>' + hex; that output is accepted back.
+TEST_F(CodecAvp_test, RawAvp_DecodeEncodeSymmetry) {
+    auto wire = buildRawAvp(99999, 0x40, {0xde, 0xad, 0xbe});
+    codec::Avp decoded;
+    decoded.decode(wire.data(), wire.size(), dict_);
+    std::string name = decoded.getName(dict_);
+    nlohmann::json value = decoded.toJson(dict_);
+    EXPECT_EQ(name, "avp-99999");
+    EXPECT_EQ(value, nlohmann::json("deadbe"));
+
+    nlohmann::json obj = {{"hex", value}, {"flags", 0x40}};
+    codec::Avp again = codec::Avp::fromJson(name, obj, dict_);
+    core::Buffer out;
+    again.encode(out, dict_);
+    EXPECT_EQ(out, wire);
+}
+
+TEST_F(CodecAvp_test, RawAvp_InvalidInputsThrow) {
+    EXPECT_THROW(codec::Avp::fromJson("avp-", nlohmann::json("00"), dict_), std::runtime_error);
+    EXPECT_THROW(codec::Avp::fromJson("avp-12x", nlohmann::json("00"), dict_), std::runtime_error);
+    EXPECT_THROW(codec::Avp::fromJson("avp-1-", nlohmann::json("00"), dict_), std::runtime_error);
+    EXPECT_THROW(codec::Avp::fromJson("avp-99999999999", nlohmann::json("00"), dict_), std::runtime_error);
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", nlohmann::json("0"), dict_), std::runtime_error);       // odd hex
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", nlohmann::json("zz"), dict_), std::runtime_error);      // non-hex
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", nlohmann::json(5), dict_), std::runtime_error);         // number
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", nlohmann::json::object(), dict_), std::runtime_error);  // no hex
+    nlohmann::json badFlags = {{"hex", "00"}, {"flags", 256}};
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", badFlags, dict_), std::runtime_error);
+    nlohmann::json negFlags = {{"hex", "00"}, {"flags", -1}};
+    EXPECT_THROW(codec::Avp::fromJson("avp-1", negFlags, dict_), std::runtime_error);
+}
+
+TEST_F(CodecAvp_test, RawAvp_EmptyData) {
+    codec::Avp avp = codec::Avp::fromJson("avp-99999", nlohmann::json(""), dict_);
+    core::Buffer out;
+    avp.encode(out, dict_);
+    EXPECT_EQ(out.size(), 8u);
+    EXPECT_EQ(out[7], 8);
+}
+
+// Grouped children follow the dictionary rule order, raw/unknown ones last.
+TEST_F(CodecAvp_test, Grouped_ChildrenInRuleOrder) {
+    // Vendor-Specific-Application-Id rules: Vendor-Id, Auth-Application-Id, Acct-Application-Id.
+    nlohmann::json v = {{"Acct-Application-Id", 3}, {"avp-99999", "00"}, {"Vendor-Id", 10415}};
+    codec::Avp avp = codec::Avp::fromJson("Vendor-Specific-Application-Id", v, dict_);
+    const auto& children = avp.getGrouped();
+    ASSERT_EQ(children.size(), 3u);
+    EXPECT_EQ(children[0].getName(dict_), "Vendor-Id");
+    EXPECT_EQ(children[1].getName(dict_), "Acct-Application-Id");
+    EXPECT_EQ(children[2].getName(dict_), "avp-99999");
+}

@@ -43,11 +43,14 @@ SOFTWARE.
 #include <cctype>
 #include <cstring>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 
 // Project
+#include <algorithm>
 #include <ert/diametercodec/codec/Avp.hpp>
 #include <ert/diametercodec/stack/Avp.hpp>
+#include <ert/diametercodec/stack/AvpRule.hpp>
 #include <ert/diametercodec/stack/Dictionary.hpp>
 #include <ert/diametercodec/stack/Format.hpp>
 #include <ert/tracing/Logger.hpp>
@@ -355,6 +358,17 @@ void Avp::encode(core::Buffer& out, const stack::Dictionary& dict) const {
 // ============================================================================
 size_t Avp::encodeData(core::Buffer& out, const stack::Dictionary& dict) const {
     size_t start = out.size();
+    if (raw_) {
+        // Negative testing: verbatim bytes, whatever the dictionary format.
+        const auto& s = std::get<std::string>(data_);
+        out.insert(out.end(), reinterpret_cast<const uint8_t*>(s.data()),
+                   reinterpret_cast<const uint8_t*>(s.data()) + s.size());
+        LOGDEBUG(ert::tracing::Logger::debug(
+            ert::tracing::Logger::asString("Diameter encode AVP '%s' (raw): 0x%s", getName(dict).c_str(),
+                                           toHex(out.data() + start, out.size() - start).c_str()),
+            ERT_FILE_LOCATION));
+        return out.size() - start;
+    }
     auto basicType = resolveFormatType(id_, dict);
 
     switch (basicType) {
@@ -442,6 +456,7 @@ size_t Avp::encodeData(core::Buffer& out, const stack::Dictionary& dict) const {
 // ============================================================================
 size_t Avp::getLength(const stack::Dictionary& dict) const {
     int headerLen = vendorBit() ? core::AvpHeaderLenWithVendor : core::AvpHeaderLenWithoutVendor;
+    if (raw_) return headerLen + std::get<std::string>(data_).size();
     auto basicType = resolveFormatType(id_, dict);
 
     switch (basicType) {
@@ -487,7 +502,7 @@ size_t Avp::getLength(const stack::Dictionary& dict) const {
 // Avp::getName
 // ============================================================================
 std::string Avp::getName(const stack::Dictionary& dict) const {
-    const stack::Avp* sa = dict.getAvp(id_);
+    const stack::Avp* sa = raw_ ? nullptr : dict.getAvp(id_);
     if (sa) return sa->getName();
     // Unknown AVP: use code-vendor format
     std::ostringstream oss;
@@ -552,6 +567,10 @@ static std::string avpValueTrace(const core::AvpId& id, const Avp::Data& data, c
 nlohmann::json Avp::toJson(const stack::Dictionary& dict) const { return dataToJson(dict); }
 
 nlohmann::json Avp::dataToJson(const stack::Dictionary& dict) const {
+    if (raw_) {
+        const auto& s = std::get<std::string>(data_);
+        return toHex(reinterpret_cast<const uint8_t*>(s.data()), s.size());
+    }
     auto basicType = resolveFormatType(id_, dict);
 
     switch (basicType) {
@@ -620,12 +639,93 @@ nlohmann::json Avp::dataToJson(const stack::Dictionary& dict) const {
 // ============================================================================
 // Avp::fromJson
 // ============================================================================
+namespace {
+
+// Parse a decimal component of a raw AVP key (strict: digits only, fits 32 bits).
+bool parseRawKeyNumber(const std::string& s, uint32_t& out) {
+    if (s.empty() || s.size() > 10) return false;
+    uint64_t v = 0;
+    for (char c : s) {
+        if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+        v = v * 10 + static_cast<uint64_t>(c - '0');
+    }
+    if (v > 0xFFFFFFFFull) return false;
+    out = static_cast<uint32_t>(v);
+    return true;
+}
+
+// 'avp-<code>' or 'avp-<code>-<vendor>' -> (code, vendor). False if not that form.
+bool parseRawAvpKey(const std::string& key, uint32_t& code, uint32_t& vendor) {
+    static const std::string prefix = "avp-";
+    if (key.compare(0, prefix.size(), prefix) != 0) return false;
+    std::string rest = key.substr(prefix.size());
+    vendor = 0;
+    auto dash = rest.find('-');
+    if (dash == std::string::npos) return parseRawKeyNumber(rest, code);
+    return parseRawKeyNumber(rest.substr(0, dash), code) && parseRawKeyNumber(rest.substr(dash + 1), vendor);
+}
+
+}  // anonymous namespace
+
+// ============================================================================
+// Avp::sortByRules
+// ============================================================================
+void Avp::sortByRules(std::vector<Avp>& avps, const std::map<int, stack::AvpRule>& rules) {
+    if (rules.empty() || avps.size() < 2) return;
+    auto rank = [&rules](const core::AvpId& id) {
+        for (const auto& kv : rules)
+            if (kv.second.getId() == id) return kv.first;
+        return std::numeric_limits<int>::max();  // not in the rules: last
+    };
+    std::vector<std::pair<int, Avp>> keyed;
+    keyed.reserve(avps.size());
+    for (auto& a : avps) {
+        int r = a.raw_ ? std::numeric_limits<int>::max() : rank(a.id_);
+        keyed.emplace_back(r, std::move(a));
+    }
+    std::stable_sort(keyed.begin(), keyed.end(), [](const auto& x, const auto& y) { return x.first < y.first; });
+    for (size_t i = 0; i < keyed.size(); ++i) avps[i] = std::move(keyed[i].second);
+}
+
+// ============================================================================
+// Avp::fromJson
+// ============================================================================
 Avp Avp::fromJson(const std::string& avpName, const nlohmann::json& value, const stack::Dictionary& dict) {
     Avp avp;
 
     // Resolve AVP id from name
     const stack::Avp* sa = dict.getAvp(avpName);
-    if (!sa) throw std::runtime_error("Unknown AVP name: " + avpName);
+    if (!sa) {
+        uint32_t code = 0, vendor = 0;
+        if (!parseRawAvpKey(avpName, code, vendor)) throw std::runtime_error("Unknown AVP name: " + avpName);
+
+        // Raw AVP (negative testing): verbatim data, explicit or default flags.
+        avp.raw_ = true;
+        avp.id_ = core::AvpId(static_cast<core::S32>(code), static_cast<core::S32>(vendor));
+        avp.flags_ = vendor != 0 ? core::AvpFlagVendor : 0;
+        std::string hex;
+        if (value.is_string()) {
+            hex = value.get<std::string>();
+        } else if (value.is_object()) {
+            auto itHex = value.find("hex");
+            if (itHex == value.end() || !itHex->is_string())
+                throw std::runtime_error("Raw AVP '" + avpName + "' object requires a 'hex' string");
+            hex = itHex->get<std::string>();
+            auto itFlags = value.find("flags");
+            if (itFlags != value.end()) {
+                // Signed or unsigned JSON integer (parsed literals are unsigned,
+                // programmatic ones signed); reject floats and out of range.
+                if (!itFlags->is_number_integer() || itFlags->get<int64_t>() < 0 || itFlags->get<int64_t>() > 0xFF)
+                    throw std::runtime_error("Raw AVP '" + avpName + "' flags must be 0..255");
+                avp.flags_ = static_cast<uint8_t>(itFlags->get<int64_t>());
+            }
+        } else {
+            throw std::runtime_error("Raw AVP '" + avpName + "' value must be a hex string or {hex, flags}");
+        }
+        auto raw = fromHex(hex);
+        avp.data_ = std::string(reinterpret_cast<const char*>(raw.data()), raw.size());
+        return avp;
+    }
 
     avp.id_ = sa->getId();
 
@@ -683,6 +783,7 @@ Avp Avp::fromJson(const std::string& avpName, const nlohmann::json& value, const
                     children.push_back(Avp::fromJson(key, val, dict));
                 }
             }
+            sortByRules(children, sa->avprules());
             avp.data_ = std::move(children);
             break;
         }

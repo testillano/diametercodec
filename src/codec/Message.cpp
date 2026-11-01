@@ -272,6 +272,11 @@ Message Message::fromJson(const nlohmann::json& j, const stack::Dictionary& dict
         }
     }
 
+    // JSON objects carry no order (keys are sorted): use the command ABNF
+    // order from the dictionary so fixed AVPs (e.g. < Session-Id >) go first.
+    const stack::Command* cmd = dict.getCommand(msg.id_);
+    if (cmd) Avp::sortByRules(msg.avps_, cmd->avprules());
+
     return msg;
 }
 
