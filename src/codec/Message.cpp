@@ -205,7 +205,9 @@ const Avp* Message::getAvp(const std::string& name, const stack::Dictionary& dic
 // ============================================================================
 // Message::toJson
 // ============================================================================
-nlohmann::json Message::toJson(const stack::Dictionary& dict) const {
+nlohmann::json Message::toJson(const stack::Dictionary& dict) const { return toJson(dict, DecodeOptions{}); }
+
+nlohmann::json Message::toJson(const stack::Dictionary& dict, const DecodeOptions& options) const {
     nlohmann::json result = nlohmann::json::object();
 
     // Header metadata
@@ -220,7 +222,7 @@ nlohmann::json Message::toJson(const stack::Dictionary& dict) const {
     // AVPs as flat JSON object (same as Grouped AVP logic)
     for (const auto& avp : avps_) {
         std::string name = avp.getName(dict);
-        nlohmann::json val = avp.toJson(dict);
+        nlohmann::json val = avp.toJson(dict, options);  // empty options: the plain path
         if (result.contains(name)) {
             if (!result[name].is_array()) {
                 nlohmann::json arr = nlohmann::json::array();

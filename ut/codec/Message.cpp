@@ -585,3 +585,27 @@ TEST_F(CodecMessage_test, decodeEncodeKeepsWireOrder) {
     std::vector<std::string> expected = {"Origin-Host", "Session-Id"};
     EXPECT_EQ(avpNames(decoded, dict_), expected);
 }
+
+// ============================================================================
+// toJson with DecodeOptions: configured OctetString AVPs in readable form
+// ============================================================================
+TEST_F(CodecMessage_test, toJsonWithDecodeOptions) {
+    auto cerJson = buildCerJson();
+    cerJson["NAS-IP-Address"] = "0a8136a5";  // OctetString (4, 0)
+    auto wire = ert::diametercodec::codec::Message::fromJson(cerJson, dict_).encode(dict_);
+    ert::diametercodec::codec::Message decoded;
+    decoded.decode(wire.data(), wire.size(), dict_);
+
+    ert::diametercodec::codec::DecodeOptions options;
+    options.forms[{4, 0}] = "ipv4";
+    const nlohmann::json readable = decoded.toJson(dict_, options);
+    const nlohmann::json plain = decoded.toJson(dict_);
+
+    EXPECT_EQ(readable["NAS-IP-Address"], (nlohmann::json{{"ipv4", "10.129.54.165"}}));
+    EXPECT_EQ(plain["NAS-IP-Address"], "0a8136a5");
+    nlohmann::json rest = readable;
+    rest.erase("NAS-IP-Address");
+    nlohmann::json plainRest = plain;
+    plainRest.erase("NAS-IP-Address");
+    EXPECT_EQ(rest, plainRest);  // nothing else changes
+}

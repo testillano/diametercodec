@@ -102,6 +102,8 @@ class Message {
 
     // --- JSON conversion ---
     nlohmann::json toJson(const stack::Dictionary& dict) const;
+    /** As toJson(dict), with the configured OctetString AVPs in readable form (see DecodeOptions). */
+    nlohmann::json toJson(const stack::Dictionary& dict, const DecodeOptions& options) const;
     static Message fromJson(const nlohmann::json& j, const stack::Dictionary& dict);
 
     // --- Header accessors ---

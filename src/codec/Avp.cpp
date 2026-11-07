@@ -41,6 +41,7 @@ SOFTWARE.
 #include <arpa/inet.h>
 
 #include <cctype>
+#include <cstdio>
 #include <cstring>
 #include <iomanip>
 #include <limits>
@@ -185,6 +186,11 @@ void encodeAddress(core::Buffer& out, const std::string& addr) {
     }
 }
 
+}  // anonymous namespace
+
+namespace {
+// Readable form of an OctetString value (defined below, with the encoders).
+nlohmann::json readableOctets(const std::string& bytes, const std::string& form);
 }  // anonymous namespace
 
 // Forward declaration (defined below, before Avp::toJson)
@@ -564,9 +570,13 @@ static std::string avpValueTrace(const core::AvpId& id, const Avp::Data& data, c
 // ============================================================================
 // Avp::toJson
 // ============================================================================
-nlohmann::json Avp::toJson(const stack::Dictionary& dict) const { return dataToJson(dict); }
+nlohmann::json Avp::toJson(const stack::Dictionary& dict) const { return dataToJson(dict, nullptr); }
 
-nlohmann::json Avp::dataToJson(const stack::Dictionary& dict) const {
+nlohmann::json Avp::toJson(const stack::Dictionary& dict, const DecodeOptions& options) const {
+    return dataToJson(dict, options.empty() ? nullptr : &options);
+}
+
+nlohmann::json Avp::dataToJson(const stack::Dictionary& dict, const DecodeOptions* options) const {
     if (raw_) {
         const auto& s = std::get<std::string>(data_);
         return toHex(reinterpret_cast<const uint8_t*>(s.data()), s.size());
@@ -605,7 +615,7 @@ nlohmann::json Avp::dataToJson(const stack::Dictionary& dict) const {
             const auto& children = std::get<std::vector<Avp>>(data_);
             for (const auto& child : children) {
                 std::string name = child.getName(dict);
-                nlohmann::json val = child.toJson(dict);
+                nlohmann::json val = child.dataToJson(dict, options);
                 if (obj.contains(name)) {
                     // Convert to array for repeated AVPs
                     if (!obj[name].is_array()) {
@@ -628,9 +638,13 @@ nlohmann::json Avp::dataToJson(const stack::Dictionary& dict) const {
         case stack::Format::Type::QoSFilterRule:
             return std::get<std::string>(data_);
 
-        // OctetString or unknown: hex representation
+        // OctetString or unknown: hex representation, or the configured readable form
         default: {
             const auto& s = std::get<std::string>(data_);
+            if (options) {
+                auto it = options->forms.find(id_);
+                if (it != options->forms.end()) return readableOctets(s, it->second);
+            }
             return toHex(reinterpret_cast<const uint8_t*>(s.data()), s.size());
         }
     }
@@ -834,7 +848,151 @@ std::string octetsFromForm(const nlohmann::json& form, const std::string& avpNam
     formError(avpName, "unknown readable form '" + key + "' (hex|text|ipv4|ipv6|ipv6Prefix|msTimeZone|uli)");
 }
 
+// ----------------------------------------------------------------------------
+// Readable forms of an OctetString (bytes -> JSON): the inverse of the
+// encoders above, for the AVPs configured in DecodeOptions. Each reader only
+// proposes a value; readableOctets keeps it if encoding it back gives the same
+// bytes (rejects what the encoders cannot express: spare bits, unsupported
+// types, non canonical values) and otherwise falls back to {"hex": ...}.
+// ----------------------------------------------------------------------------
+
+// Strict UTF-8 (RFC 3629): no overlongs, no surrogates, <= U+10FFFF.
+bool isUtf8(const std::string& s) {
+    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+    const size_t n = s.size();
+    size_t i = 0;
+    while (i < n) {
+        const unsigned char c = p[i];
+        if (c < 0x80) {
+            ++i;
+            continue;
+        }
+        size_t len = 0;
+        uint32_t cp = 0, min = 0;
+        if ((c & 0xE0) == 0xC0) {
+            len = 2, cp = c & 0x1F, min = 0x80;
+        } else if ((c & 0xF0) == 0xE0) {
+            len = 3, cp = c & 0x0F, min = 0x800;
+        } else if ((c & 0xF8) == 0xF0) {
+            len = 4, cp = c & 0x07, min = 0x10000;
+        } else {
+            return false;
+        }
+        if (i + len > n) return false;
+        for (size_t k = 1; k < len; ++k) {
+            if ((p[i + k] & 0xC0) != 0x80) return false;
+            cp = (cp << 6) | (p[i + k] & 0x3F);
+        }
+        if (cp < min || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return false;
+        i += len;
+    }
+    return true;
+}
+
+std::string ipText(const uint8_t* buf, int family) {
+    char text[INET6_ADDRSTRLEN];
+    return inet_ntop(family, buf, text, sizeof(text)) ? std::string(text) : std::string();
+}
+
+uint32_t bigEndian(const uint8_t* p, int bytes) {
+    uint32_t v = 0;
+    for (int i = 0; i < bytes; ++i) v = (v << 8) | p[i];
+    return v;
+}
+
+// 3 bytes BCD (TS 24.008 10.5.1.3) -> mcc/mnc into 'uli'. False on a non digit.
+bool readPlmn(const uint8_t* p, nlohmann::json& uli) {
+    auto digit = [](uint8_t d, std::string& out) {
+        if (d > 9) return false;
+        out.push_back(static_cast<char>('0' + d));
+        return true;
+    };
+    std::string mcc, mnc;
+    if (!digit(p[0] & 0x0F, mcc) || !digit(p[0] >> 4, mcc) || !digit(p[1] & 0x0F, mcc)) return false;
+    if (!digit(p[2] & 0x0F, mnc) || !digit(p[2] >> 4, mnc)) return false;
+    if ((p[1] >> 4) != 0x0F && !digit(p[1] >> 4, mnc)) return false;  // F: 2-digit MNC
+    uli["mcc"] = mcc;
+    uli["mnc"] = mnc;
+    return true;
+}
+
+// Candidate readable value of 'bytes' for 'form'; null when it does not fit.
+nlohmann::json readForm(const std::string& bytes, const std::string& form) {
+    const auto* p = reinterpret_cast<const uint8_t*>(bytes.data());
+    const size_t n = bytes.size();
+    if (form == "text") {
+        if (bytes.find('\0') != std::string::npos || !isUtf8(bytes)) return nullptr;
+        return bytes;
+    }
+    if (form == "ipv4" || form == "ipv6") {
+        if (n != (form == "ipv4" ? 4u : 16u)) return nullptr;
+        std::string text = ipText(p, form == "ipv4" ? AF_INET : AF_INET6);
+        return text.empty() ? nlohmann::json() : nlohmann::json(text);
+    }
+    if (form == "ipv6Prefix") {
+        if (n < 2 || p[0] != 0 || p[1] > 128 || n != 2u + (p[1] + 7u) / 8u) return nullptr;
+        uint8_t addr[16] = {0};
+        std::memcpy(addr, p + 2, n - 2);
+        std::string text = ipText(addr, AF_INET6);
+        return text.empty() ? nlohmann::json() : nlohmann::json(text + "/" + std::to_string(p[1]));
+    }
+    if (form == "msTimeZone") {
+        if (n != 2 || (p[0] >> 4) > 9 || p[1] > 2) return nullptr;
+        const int minutes = ((p[0] & 0x07) * 10 + (p[0] >> 4)) * 15;
+        char text[16];
+        std::snprintf(text, sizeof(text), "%c%02d:%02d", (p[0] & 0x08) ? '-' : '+', minutes / 60, minutes % 60);
+        std::string tz(text);
+        if (p[1] != 0) tz += "+" + std::to_string(p[1]);
+        return tz;
+    }
+    if (form == "uli") {
+        nlohmann::json uli = nlohmann::json::object();
+        if (n == 6 && p[0] == 128) {
+            uli["type"] = "tai";
+            if (!readPlmn(p + 1, uli)) return nullptr;
+            uli["tac"] = bigEndian(p + 4, 2);
+        } else if (n == 8 && p[0] == 129) {
+            uli["type"] = "ecgi";
+            if (!readPlmn(p + 1, uli)) return nullptr;
+            uli["eci"] = bigEndian(p + 4, 4);
+        } else if (n == 13 && p[0] == 130) {
+            uli["type"] = "tai-ecgi";
+            if (!readPlmn(p + 1, uli)) return nullptr;  // the ECGI PLMN must be the same one (round trip)
+            uli["tac"] = bigEndian(p + 4, 2);
+            uli["eci"] = bigEndian(p + 9, 4);
+        } else {
+            return nullptr;  // other types (CGI, SAI, RAI, 5GS...): not supported by the encoder
+        }
+        return uli;
+    }
+    return nullptr;
+}
+
+nlohmann::json readableOctets(const std::string& bytes, const std::string& form) {
+    nlohmann::json value = readForm(bytes, form);
+    if (!value.is_null()) {
+        nlohmann::json candidate = {{form, value}};
+        try {
+            if (octetsFromForm(candidate, "") == bytes) return candidate;
+        } catch (const std::exception&) {
+            // the encoder cannot express it: fall back to hex
+        }
+    }
+    LOGDEBUG(ert::tracing::Logger::debug(
+        ert::tracing::Logger::asString("OctetString does not fit readable form '%s': decoded as hex", form.c_str()),
+        ERT_FILE_LOCATION));
+    return {{"hex", toHex(reinterpret_cast<const uint8_t*>(bytes.data()), bytes.size())}};
+}
+
 }  // anonymous namespace
+
+// ============================================================================
+// DecodeOptions
+// ============================================================================
+bool DecodeOptions::isForm(const std::string& form) {
+    return form == "text" || form == "ipv4" || form == "ipv6" || form == "ipv6Prefix" || form == "msTimeZone" ||
+           form == "uli";
+}
 
 // ============================================================================
 // Avp::sortByRules

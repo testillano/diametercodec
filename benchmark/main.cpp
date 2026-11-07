@@ -36,6 +36,7 @@ SPDX-License-Identifier: MIT
 #include <ert/tracing/Logger.hpp>
 #include <nlohmann/json.hpp>
 
+using ert::diametercodec::codec::DecodeOptions;
 using ert::diametercodec::codec::Message;
 using ert::diametercodec::stack::Dictionary;
 using Buffer = ert::diametercodec::core::Buffer;
@@ -160,6 +161,21 @@ int main(int argc, char* argv[]) {
     Message baseMsg = Message::fromJson(messageJson, dictionary);
     Buffer wire = baseMsg.encode(dictionary);
 
+    // The same message plus OctetString AVPs (one inside a Grouped), to measure
+    // the readable decoding (DecodeOptions): plain, empty options (must cost
+    // nothing) and 3 AVPs configured. Separate message: the 'toJson' figure
+    // above stays comparable with former runs.
+    nlohmann::json octetsJson = messageJson;
+    octetsJson["NAS-IP-Address"] = "0a8136a5";
+    octetsJson["Class"] = "646e6e5f6d62622e636f6d";
+    octetsJson["Proxy-Info"] = {{"Proxy-Host", "proxy.example.com"}, {"Proxy-State", "8064f0000065"}};
+    Message octetsMsg = Message::fromJson(octetsJson, dictionary);
+    const DecodeOptions noOptions;
+    DecodeOptions decodeAs;
+    decodeAs.forms[{4, 0}] = "ipv4";   // NAS-IP-Address
+    decodeAs.forms[{25, 0}] = "text";  // Class
+    decodeAs.forms[{33, 0}] = "uli";   // Proxy-State (inside Proxy-Info)
+
     struct Op {
         const char* name;
         std::function<void()> fn;
@@ -181,6 +197,23 @@ int main(int argc, char* argv[]) {
                                  {"toJson",
                                   [&]() {
                                       nlohmann::json j = baseMsg.toJson(dictionary);
+                                      g_sink += j.size();
+                                  }},
+                                 // toJson over the message with OctetStrings: plain, empty
+                                 // options, and 3 AVPs in readable form.
+                                 {"toJson.octets",
+                                  [&]() {
+                                      nlohmann::json j = octetsMsg.toJson(dictionary);
+                                      g_sink += j.size();
+                                  }},
+                                 {"toJson.octets.noDecodeAs",
+                                  [&]() {
+                                      nlohmann::json j = octetsMsg.toJson(dictionary, noOptions);
+                                      g_sink += j.size();
+                                  }},
+                                 {"toJson.octets.decodeAs3",
+                                  [&]() {
+                                      nlohmann::json j = octetsMsg.toJson(dictionary, decodeAs);
                                       g_sink += j.size();
                                   }},
                                  // fromJson: JSON -> structured Message.
@@ -235,12 +268,12 @@ int main(int argc, char* argv[]) {
               << "  iterations : " << iterations << " x " << repeats << " repeats\n"
               << "  message    : Capabilities-Exchange-Request (" << baseMsg.avps().size() << " AVPs, " << wire.size()
               << " wire bytes)\n\n"
-              << "  operation  | median ns/op |    min ns/op |    throughput\n"
-              << "  -----------+--------------+--------------+---------------\n";
+              << "  operation                | median ns/op |    min ns/op |    throughput\n"
+              << "  -------------------------+--------------+--------------+---------------\n";
 
     for (const auto& [name, r] : results) {
         const double opsPerSec = (r.median_ns > 0.0) ? (1e9 / r.median_ns) : 0.0;
-        std::cout << "  " << std::left << std::setw(10) << name << " | " << std::right << std::setw(12) << std::fixed
+        std::cout << "  " << std::left << std::setw(24) << name << " | " << std::right << std::setw(12) << std::fixed
                   << std::setprecision(1) << r.median_ns << " | " << std::setw(12) << r.min_ns << " | " << std::setw(10)
                   << std::setprecision(0) << opsPerSec << " ops/s\n";
     }

@@ -2,7 +2,10 @@
 
 Reference micro-benchmark for the **codec hot path**: per-message `encode` and
 `decode` (plus the JSON conversions `toJson` / `fromJson` and a full
-`roundtrip`).
+`roundtrip`). The `toJson.octets*` operations decode the same message plus three
+OctetString AVPs (one inside a Grouped): plain, with empty `DecodeOptions` (must
+match the plain figure) and with the three AVPs in readable form (the cost of
+the readable decoding).
 
 It is a throughput/latency probe, not a correctness test (correctness lives in
 the unit-test suite under `ut/`).
@@ -55,10 +58,10 @@ ert_diametercodec micro-benchmark
   iterations : 100000 x 5 repeats
   message    : Capabilities-Exchange-Request (9 AVPs, 188 wire bytes)
 
-  operation  | median ns/op |    min ns/op |    throughput
-  -----------+--------------+--------------+---------------
-  encode     |       ...    |       ...    |       ... ops/s
-  decode     |       ...    |       ...    |       ... ops/s
+  operation                | median ns/op |    min ns/op |    throughput
+  -------------------------+--------------+--------------+---------------
+  encode                   |       ...    |       ...    |       ... ops/s
+  decode                   |       ...    |       ...    |       ... ops/s
   ...
 ```
 

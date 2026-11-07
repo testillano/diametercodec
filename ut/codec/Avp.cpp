@@ -644,6 +644,103 @@ TEST_F(CodecAvp_test, FromJson_OctetString_InvalidFormsThrow) {
     for (const auto& form : bad) EXPECT_THROW(octets(form, dict_), std::runtime_error) << form.dump();
 }
 
+// --- OctetString readable decoding (DecodeOptions) ---
+// NAS-IP-Address (4) is an OctetString in base; the form is chosen per AVP id.
+static nlohmann::json decodedAs(const std::string& hex, const std::string& form, const stack::Dictionary& dict) {
+    codec::DecodeOptions options;
+    options.forms[{4, 0}] = form;
+    return codec::Avp::fromJson("NAS-IP-Address", nlohmann::json(hex), dict).toJson(dict, options);
+}
+
+TEST_F(CodecAvp_test, ToJson_DecodeOptions_ReadableForms) {
+    EXPECT_EQ(decodedAs("646e6e5f6d62622e636f6d", "text", dict_), (nlohmann::json{{"text", "dnn_mbb.com"}}));
+    EXPECT_EQ(decodedAs("c3b1", "text", dict_), (nlohmann::json{{"text", "\xc3\xb1"}}));
+    EXPECT_EQ(decodedAs("0a8136a5", "ipv4", dict_), (nlohmann::json{{"ipv4", "10.129.54.165"}}));
+    EXPECT_EQ(decodedAs("20010db8000000000000000000000001", "ipv6", dict_), (nlohmann::json{{"ipv6", "2001:db8::1"}}));
+    EXPECT_EQ(decodedAs("004020010db800010002", "ipv6Prefix", dict_),
+              (nlohmann::json{{"ipv6Prefix", "2001:db8:1:2::/64"}}));
+    EXPECT_EQ(decodedAs("2b01", "msTimeZone", dict_), (nlohmann::json{{"msTimeZone", "-08:00+1"}}));
+    EXPECT_EQ(decodedAs("4000", "msTimeZone", dict_), (nlohmann::json{{"msTimeZone", "+01:00"}}));
+    EXPECT_EQ(decodedAs("8064f0000065", "uli", dict_),
+              (nlohmann::json{{"uli", {{"type", "tai"}, {"mcc", "460"}, {"mnc", "00"}, {"tac", 101}}}}));
+    EXPECT_EQ(decodedAs("811204700fffffff", "uli", dict_),
+              (nlohmann::json{{"uli", {{"type", "ecgi"}, {"mcc", "214"}, {"mnc", "070"}, {"eci", 0x0fffffff}}}}));
+    EXPECT_EQ(
+        decodedAs("8212f470000112f47000003039", "uli", dict_),
+        (nlohmann::json{{"uli", {{"type", "tai-ecgi"}, {"mcc", "214"}, {"mnc", "07"}, {"tac", 1}, {"eci", 12345}}}}));
+}
+
+TEST_F(CodecAvp_test, ToJson_DecodeOptions_BytesNotFittingAreHex) {
+    const std::vector<std::pair<std::string, std::string>> table = {
+        {"ff", "text"},                              // invalid UTF-8
+        {"616200", "text"},                          // NUL byte
+        {"0a8136a5ff", "ipv4"},                      // 5 bytes
+        {"0a8136a5", "ipv6"},                        // 4 bytes
+        {"004120010db8000100020000", "ipv6Prefix"},  // length 65 needs 9 bytes, not 10
+        {"0040", "ipv6Prefix"},                      // prefix bytes missing
+        {"014020010db800010002", "ipv6Prefix"},      // reserved byte not 0
+        {"002420010db8f8", "ipv6Prefix"},            // bits beyond the length set (not canonical)
+        {"2b03", "msTimeZone"},                      // DST 3
+        {"a000", "msTimeZone"},                      // BCD digit > 9
+        {"0064f0000065", "uli"},                     // CGI (type 0): not supported
+        {"8864f0000065", "uli"},                     // 5GS TAI (136): not supported
+        {"806af0000065", "uli"},                     // MCC digit 'a'
+        {"8064f000006500", "uli"},                   // TAI with a trailing byte
+        {"8112f470ffffffff", "uli"},                 // ECI over 28 bits
+        {"8212f470000112f47100003039", "uli"},       // TAI and ECGI with different PLMN
+    };
+    for (const auto& row : table) {
+        SCOPED_TRACE(row.first + " as " + row.second);
+        EXPECT_EQ(decodedAs(row.first, row.second, dict_), (nlohmann::json{{"hex", row.first}}));
+    }
+}
+
+TEST_F(CodecAvp_test, ToJson_DecodeOptions_EveryResultEncodesBackToTheBytes) {
+    const std::vector<std::pair<std::string, std::string>> table = {
+        {"646e6e", "text"},
+        {"ff", "text"},
+        {"0a8136a5", "ipv4"},
+        {"0a8136", "ipv4"},
+        {"2b01", "msTimeZone"},
+        {"2b03", "msTimeZone"},
+        {"8064f0000065", "uli"},
+        {"0064f0000065", "uli"},
+        {"004020010db800010002", "ipv6Prefix"},
+        {"002420010db8f8", "ipv6Prefix"},
+    };
+    for (const auto& row : table) {
+        SCOPED_TRACE(row.first + " as " + row.second);
+        const nlohmann::json form = decodedAs(row.first, row.second, dict_);
+        codec::Avp back = codec::Avp::fromJson("NAS-IP-Address", form, dict_);
+        EXPECT_EQ(back.toJson(dict_), row.first);  // same bytes (plain hex)
+    }
+}
+
+TEST_F(CodecAvp_test, ToJson_DecodeOptions_OnlyConfiguredAvps) {
+    codec::DecodeOptions options;
+    options.forms[{33, 0}] = "text";  // Proxy-State, not NAS-IP-Address
+    codec::Avp avp = codec::Avp::fromJson("NAS-IP-Address", nlohmann::json("0a000001"), dict_);
+    EXPECT_EQ(avp.toJson(dict_, options), "0a000001");
+    EXPECT_EQ(avp.toJson(dict_, codec::DecodeOptions{}), "0a000001");  // empty: plain hex
+    EXPECT_EQ(avp.toJson(dict_), "0a000001");                          // no options: as before
+}
+
+TEST_F(CodecAvp_test, ToJson_DecodeOptions_GroupedAndRepeatedChildren) {
+    codec::DecodeOptions options;
+    options.forms[{33, 0}] = "text";  // Proxy-State inside Proxy-Info
+    codec::Avp avp = codec::Avp::fromJson(
+        "Proxy-Info", nlohmann::json{{"Proxy-Host", "proxy.example.com"}, {"Proxy-State", {"6f6b", "ff"}}}, dict_);
+    const nlohmann::json j = avp.toJson(dict_, options);
+    EXPECT_EQ(j["Proxy-Host"], "proxy.example.com");  // not an OctetString: untouched
+    EXPECT_EQ(j["Proxy-State"], (nlohmann::json::array({{{"text", "ok"}}, {{"hex", "ff"}}})));
+}
+
+TEST_F(CodecAvp_test, DecodeOptions_IsForm) {
+    for (const char* form : {"text", "ipv4", "ipv6", "ipv6Prefix", "msTimeZone", "uli"})
+        EXPECT_TRUE(codec::DecodeOptions::isForm(form)) << form;
+    for (const char* form : {"hex", "Text", "base64", ""}) EXPECT_FALSE(codec::DecodeOptions::isForm(form)) << form;
+}
+
 TEST_F(CodecAvp_test, FromJson_UTF8String) {
     nlohmann::json value = "charlie@domain.net";
     codec::Avp avp = codec::Avp::fromJson("User-Name", value, dict_);

@@ -85,6 +85,30 @@ class AvpRule;
 namespace codec {
 
 /**
+ * Readable forms of OctetString AVPs when decoding into JSON (toJson).
+ *
+ * By default an OctetString is decoded as the hex of its bytes. An AVP listed
+ * here is decoded instead as an object with ONE key, the form, i.e. the same
+ * readable forms fromJson accepts:
+ *   text, ipv4, ipv6, ipv6Prefix, msTimeZone, uli
+ * e.g. {"text": "dnn_mbb.com"}. When the bytes do not fit the form (a form is
+ * used only if encoding it back gives the same bytes) the value is {"hex":
+ * "..."}: the shape of a configured AVP never depends on the message, and the
+ * value encodes back to the same bytes. Decoding never fails because of it.
+ *
+ * Keys are AVP ids (code + vendor): names are resolved by the caller against
+ * its dictionaries. Non OctetString AVPs are never looked up.
+ */
+struct DecodeOptions {
+    std::map<core::AvpId, std::string> forms;
+
+    bool empty() const { return forms.empty(); }
+
+    /** Whether 'form' is a readable form name (text|ipv4|ipv6|ipv6Prefix|msTimeZone|uli). */
+    static bool isForm(const std::string& form);
+};
+
+/**
  * Binary AVP encoder/decoder with JSON conversion.
  *
  * This class handles the binary wire format of Diameter AVPs (RFC 6733 §4.1)
@@ -118,6 +142,8 @@ class Avp {
 
     // --- JSON conversion ---
     nlohmann::json toJson(const stack::Dictionary& dict) const;
+    /** As toJson(dict), with the configured OctetString AVPs in readable form (see DecodeOptions). */
+    nlohmann::json toJson(const stack::Dictionary& dict, const DecodeOptions& options) const;
     /**
      * Build an AVP from its JSON key and value.
      *
@@ -197,8 +223,9 @@ class Avp {
     // Decode data part based on format from dictionary
     void decodeData(const uint8_t* buf, size_t dataLen, const stack::Dictionary& dict);
 
-    // Convert data to JSON value based on format
-    nlohmann::json dataToJson(const stack::Dictionary& dict) const;
+    // Convert data to JSON value based on format. 'options' null: plain hex
+    // for every OctetString (the default path, no lookup).
+    nlohmann::json dataToJson(const stack::Dictionary& dict, const DecodeOptions* options) const;
 };
 
 }  // namespace codec
