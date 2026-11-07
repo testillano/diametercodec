@@ -665,6 +665,175 @@ bool parseRawAvpKey(const std::string& key, uint32_t& code, uint32_t& vendor) {
     return parseRawKeyNumber(rest.substr(0, dash), code) && parseRawKeyNumber(rest.substr(dash + 1), vendor);
 }
 
+// ----------------------------------------------------------------------------
+// Readable forms of an OctetString (JSON -> bytes). The canonical JSON form of
+// an OctetString is the hex of its bytes (the decoder always gives it back so);
+// an object with ONE of these keys is another way to write the same bytes, so a
+// provision can show "dnn_mbb.com" instead of "646e6e5f6d62622e636f6d". The key
+// names how the bytes are built, never the AVP: which form suits an AVP is its
+// 3GPP definition (the writer's knowledge, as the hex is today).
+//   generic:    hex, text (UTF-8 bytes), ipv4 (4 bytes), ipv6 (16 bytes)
+//   structured: ipv6Prefix (RFC 3162: reserved, length, prefix),
+//               msTimeZone (TS 29.061 3GPP-MS-TimeZone: TS 24.008 zone + DST),
+//               uli (TS 29.061 3GPP-User-Location-Info: TAI, ECGI, TAI+ECGI)
+// ----------------------------------------------------------------------------
+
+[[noreturn]] void formError(const std::string& avpName, const std::string& what) {
+    throw std::runtime_error("OctetString AVP '" + avpName + "': " + what);
+}
+
+std::string formString(const nlohmann::json& v, const std::string& avpName, const std::string& key) {
+    if (!v.is_string()) formError(avpName, "'" + key + "' must be a string");
+    return v.get<std::string>();
+}
+
+// Decimal JSON integer, or a "0x..." hex string; checked against max.
+uint32_t formNumber(const nlohmann::json& obj, const char* key, uint32_t max, const std::string& avpName) {
+    auto it = obj.find(key);
+    if (it == obj.end()) formError(avpName, std::string("uli needs '") + key + "'");
+    uint64_t v = 0;
+    if (it->is_number_unsigned() || (it->is_number_integer() && it->get<int64_t>() >= 0)) {
+        v = it->get<uint64_t>();
+    } else if (it->is_string()) {
+        const std::string s = it->get<std::string>();
+        if (s.size() < 3 || s.size() > 18 || s.compare(0, 2, "0x") != 0 ||
+            s.find_first_not_of("0123456789abcdefABCDEF", 2) != std::string::npos)
+            formError(avpName, std::string("uli '") + key + "' must be a decimal number or a \"0x...\" hex string");
+        v = std::stoull(s.substr(2), nullptr, 16);
+    } else {
+        formError(avpName, std::string("uli '") + key + "' must be a decimal number or a \"0x...\" hex string");
+    }
+    if (v > max) formError(avpName, std::string("uli '") + key + "' out of range");
+    return static_cast<uint32_t>(v);
+}
+
+// MCC (3 digits) + MNC (2 or 3 digits) -> 3 bytes BCD (TS 24.008 10.5.1.3).
+std::string plmnBcd(const nlohmann::json& obj, const std::string& avpName) {
+    auto digits = [&](const char* key, size_t minLen, size_t maxLen) {
+        auto it = obj.find(key);
+        if (it == obj.end() || !it->is_string())
+            formError(avpName, std::string("uli needs '") + key + "' (string of digits)");
+        std::string d = it->get<std::string>();
+        if (d.size() < minLen || d.size() > maxLen || d.find_first_not_of("0123456789") != std::string::npos)
+            formError(avpName, std::string("uli '") + key + "' must have " + std::to_string(minLen) +
+                                   (minLen == maxLen ? "" : " or " + std::to_string(maxLen)) + " digits");
+        return d;
+    };
+    const std::string mcc = digits("mcc", 3, 3), mnc = digits("mnc", 2, 3);
+    auto n = [](char c) { return static_cast<uint8_t>(c - '0'); };
+    const uint8_t mnc3 = mnc.size() == 3 ? n(mnc[2]) : 0x0F;
+    std::string out;
+    out.push_back(static_cast<char>(n(mcc[1]) << 4 | n(mcc[0])));
+    out.push_back(static_cast<char>(mnc3 << 4 | n(mcc[2])));
+    out.push_back(static_cast<char>(n(mnc[1]) << 4 | n(mnc[0])));
+    return out;
+}
+
+void pushBigEndian(std::string& out, uint32_t v, int bytes) {
+    for (int i = bytes - 1; i >= 0; --i) out.push_back(static_cast<char>((v >> (8 * i)) & 0xFF));
+}
+
+std::string uliBytes(const nlohmann::json& uli, const std::string& avpName) {
+    if (!uli.is_object()) formError(avpName, "'uli' must be an object");
+    auto itType = uli.find("type");
+    if (itType == uli.end() || !itType->is_string()) formError(avpName, "uli needs 'type': tai|ecgi|tai-ecgi");
+    const std::string type = itType->get<std::string>();
+    const std::string plmn = plmnBcd(uli, avpName);
+    std::string out;
+    if (type == "tai") {
+        out.push_back(static_cast<char>(128));
+        out += plmn;
+        pushBigEndian(out, formNumber(uli, "tac", 0xFFFF, avpName), 2);
+    } else if (type == "ecgi") {
+        out.push_back(static_cast<char>(129));
+        out += plmn;
+        pushBigEndian(out, formNumber(uli, "eci", 0x0FFFFFFF, avpName), 4);
+    } else if (type == "tai-ecgi") {
+        out.push_back(static_cast<char>(130));
+        out += plmn;
+        pushBigEndian(out, formNumber(uli, "tac", 0xFFFF, avpName), 2);
+        out += plmn;
+        pushBigEndian(out, formNumber(uli, "eci", 0x0FFFFFFF, avpName), 4);
+    } else {
+        formError(avpName, "uli 'type' must be tai|ecgi|tai-ecgi");
+    }
+    return out;
+}
+
+// "+-hh:mm[+dst]" -> 2 bytes: TS 24.008 10.5.3.8 time zone (quarters of an
+// hour, BCD with swapped semi-octets, sign bit 0x08) + 10.5.3.12 DST (0..2).
+std::string msTimeZoneBytes(const std::string& tz, const std::string& avpName) {
+    auto bad = [&]() { formError(avpName, "msTimeZone must be +-hh:mm[+dst] (e.g. -08:00+1): " + tz); };
+    if (tz.size() != 6 && tz.size() != 8) bad();
+    if ((tz[0] != '+' && tz[0] != '-') || tz[3] != ':') bad();
+    for (size_t i : {1u, 2u, 4u, 5u})
+        if (!std::isdigit(static_cast<unsigned char>(tz[i]))) bad();
+    int dst = 0;
+    if (tz.size() == 8) {
+        if (tz[6] != '+' || tz[7] < '0' || tz[7] > '2') bad();
+        dst = tz[7] - '0';
+    }
+    const int minutes = ((tz[1] - '0') * 10 + (tz[2] - '0')) * 60 + (tz[4] - '0') * 10 + (tz[5] - '0');
+    if (minutes % 15 != 0) formError(avpName, "msTimeZone goes in quarters of an hour: " + tz);
+    const int q = minutes / 15;
+    if (q > 79) formError(avpName, "msTimeZone out of range: " + tz);
+    uint8_t zone = static_cast<uint8_t>((q % 10) << 4 | (q / 10));
+    if (tz[0] == '-') zone |= 0x08;
+    std::string out;
+    out.push_back(static_cast<char>(zone));
+    out.push_back(static_cast<char>(dst));
+    return out;
+}
+
+// "addr/len" -> reserved (0) + prefix length + the first ceil(len/8) bytes of
+// the address (bits beyond the length cleared), RFC 3162 Framed-IPv6-Prefix.
+std::string ipv6PrefixBytes(const std::string& prefix, const std::string& avpName) {
+    auto slash = prefix.find('/');
+    if (slash == std::string::npos) formError(avpName, "ipv6Prefix must be <ipv6>/<length>: " + prefix);
+    const std::string addr = prefix.substr(0, slash), lenText = prefix.substr(slash + 1);
+    if (lenText.empty() || lenText.size() > 3 || lenText.find_first_not_of("0123456789") != std::string::npos)
+        formError(avpName, "ipv6Prefix length must be 0..128: " + prefix);
+    const int len = std::stoi(lenText);
+    if (len > 128) formError(avpName, "ipv6Prefix length must be 0..128: " + prefix);
+    uint8_t buf[16];
+    if (inet_pton(AF_INET6, addr.c_str(), buf) != 1) formError(avpName, "ipv6Prefix address is not IPv6: " + prefix);
+    std::string out;
+    out.push_back(0);
+    out.push_back(static_cast<char>(len));
+    const int bytes = (len + 7) / 8;
+    for (int i = 0; i < bytes; ++i) {
+        uint8_t b = buf[i];
+        const int bits = len - 8 * i;
+        if (bits < 8) b &= static_cast<uint8_t>(0xFF << (8 - bits));
+        out.push_back(static_cast<char>(b));
+    }
+    return out;
+}
+
+std::string octetsFromForm(const nlohmann::json& form, const std::string& avpName) {
+    if (form.size() != 1)
+        formError(avpName,
+                  "a readable form is an object with exactly one key "
+                  "(hex|text|ipv4|ipv6|ipv6Prefix|msTimeZone|uli)");
+    const auto& [key, v] = *form.items().begin();
+    if (key == "hex") {
+        auto raw = fromHex(formString(v, avpName, key));
+        return std::string(reinterpret_cast<const char*>(raw.data()), raw.size());
+    }
+    if (key == "text") return formString(v, avpName, key);
+    if (key == "ipv4" || key == "ipv6") {
+        const std::string addr = formString(v, avpName, key);
+        uint8_t buf[16];
+        const int family = key == "ipv4" ? AF_INET : AF_INET6;
+        if (inet_pton(family, addr.c_str(), buf) != 1) formError(avpName, "'" + key + "' is not valid: " + addr);
+        return std::string(reinterpret_cast<const char*>(buf), key == "ipv4" ? 4 : 16);
+    }
+    if (key == "ipv6Prefix") return ipv6PrefixBytes(formString(v, avpName, key), avpName);
+    if (key == "msTimeZone") return msTimeZoneBytes(formString(v, avpName, key), avpName);
+    if (key == "uli") return uliBytes(v, avpName);
+    formError(avpName, "unknown readable form '" + key + "' (hex|text|ipv4|ipv6|ipv6Prefix|msTimeZone|uli)");
+}
+
 }  // anonymous namespace
 
 // ============================================================================
@@ -796,8 +965,12 @@ Avp Avp::fromJson(const std::string& avpName, const nlohmann::json& value, const
             avp.data_ = value.get<std::string>();
             break;
 
-        // OctetString: hex string → raw bytes
+        // OctetString: hex string -> raw bytes, or a readable form (object)
         default: {
+            if (value.is_object()) {
+                avp.data_ = octetsFromForm(value, avpName);
+                break;
+            }
             auto hex = value.get<std::string>();
             auto raw = fromHex(hex);
             avp.data_ = std::string(reinterpret_cast<const char*>(raw.data()), raw.size());

@@ -129,6 +129,19 @@ class Avp {
      * - object value: {"hex": "<data>", "flags": <0..255>} (flags optional,
      *   full AVP flags byte; the V-bit decides whether a Vendor-Id is written).
      * Grouped children are ordered by the dictionary rules (see sortByRules).
+     *
+     * An OctetString value is the hex of its bytes (the form toJson emits), or
+     * a readable form: an object with exactly one key, which names how the
+     * bytes are built (not the AVP; which form suits an AVP is its definition):
+     * - {"hex": "0a000001"}, {"text": "dnn_mbb.com"} (UTF-8 bytes),
+     *   {"ipv4": "10.0.0.1"} (4 bytes), {"ipv6": "2001:db8::1"} (16 bytes);
+     * - {"ipv6Prefix": "2001:db8::/64"} (RFC 3162: reserved, length, prefix),
+     *   {"msTimeZone": "-08:00+1"} (TS 29.061 3GPP-MS-TimeZone: TS 24.008 time
+     *   zone in quarters of an hour + DST hours),
+     *   {"uli": {"type": "tai|ecgi|tai-ecgi", "mcc": "214", "mnc": "07",
+     *   "tac": 1, "eci": 12345}} (TS 29.061 3GPP-User-Location-Info; tac/eci
+     *   decimal numbers or "0x..." hex strings).
+     * An invalid form throws std::runtime_error.
      */
     static Avp fromJson(const std::string& avpName, const nlohmann::json& value, const stack::Dictionary& dict);
 

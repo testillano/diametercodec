@@ -573,6 +573,77 @@ TEST_F(CodecAvp_test, FromJson_OctetString_HexInput) {
     EXPECT_EQ(avp.getString(), expected);
 }
 
+// --- OctetString readable forms (NAS-IP-Address is an OctetString in base) ---
+static std::string bytes(std::initializer_list<int> b) {
+    std::string s;
+    for (int v : b) s.push_back(static_cast<char>(v));
+    return s;
+}
+
+static std::string octets(const nlohmann::json& form, const stack::Dictionary& dict) {
+    return codec::Avp::fromJson("NAS-IP-Address", form, dict).getString();
+}
+
+TEST_F(CodecAvp_test, FromJson_OctetString_GenericForms) {
+    EXPECT_EQ(octets({{"hex", "deadbeef"}}, dict_), bytes({0xDE, 0xAD, 0xBE, 0xEF}));
+    EXPECT_EQ(octets({{"text", "dnn_mbb.com"}}, dict_), "dnn_mbb.com");
+    EXPECT_EQ(octets({{"ipv4", "10.129.54.165"}}, dict_), bytes({0x0A, 0x81, 0x36, 0xA5}));
+    EXPECT_EQ(octets({{"ipv6", "2001:db8::1"}}, dict_),
+              bytes({0x20, 0x01, 0x0D, 0xB8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}));
+}
+
+TEST_F(CodecAvp_test, FromJson_OctetString_StructuredForms) {
+    // Framed-IPv6-Prefix: reserved, length, prefix bytes (bits beyond the length cleared)
+    EXPECT_EQ(octets({{"ipv6Prefix", "2001:db8:1:2::/64"}}, dict_),
+              bytes({0x00, 64, 0x20, 0x01, 0x0D, 0xB8, 0x00, 0x01, 0x00, 0x02}));
+    EXPECT_EQ(octets({{"ipv6Prefix", "2001:db8:ffff::/36"}}, dict_), bytes({0x00, 36, 0x20, 0x01, 0x0D, 0xB8, 0xF0}));
+    // 3GPP-MS-TimeZone: quarters of an hour BCD (swapped), sign 0x08, DST
+    EXPECT_EQ(octets({{"msTimeZone", "-08:00+1"}}, dict_), bytes({0x2B, 0x01}));
+    EXPECT_EQ(octets({{"msTimeZone", "+01:00"}}, dict_), bytes({0x40, 0x00}));
+    EXPECT_EQ(octets({{"msTimeZone", "+05:45+2"}}, dict_), bytes({0x32, 0x02}));
+    // 3GPP-User-Location-Info: type + BCD PLMN + TAC / ECI
+    EXPECT_EQ(octets({{"uli", {{"type", "tai"}, {"mcc", "460"}, {"mnc", "00"}, {"tac", 101}}}}, dict_),
+              bytes({128, 0x64, 0xF0, 0x00, 0x00, 0x65}));
+    EXPECT_EQ(octets({{"uli", {{"type", "ecgi"}, {"mcc", "214"}, {"mnc", "070"}, {"eci", "0xfffffff"}}}}, dict_),
+              bytes({129, 0x12, 0x04, 0x70, 0x0F, 0xFF, 0xFF, 0xFF}));
+    EXPECT_EQ(
+        octets({{"uli", {{"type", "tai-ecgi"}, {"mcc", "214"}, {"mnc", "07"}, {"tac", 1}, {"eci", 12345}}}}, dict_),
+        bytes({130, 0x12, 0xF4, 0x70, 0x00, 0x01, 0x12, 0xF4, 0x70, 0x00, 0x00, 0x30, 0x39}));
+}
+
+TEST_F(CodecAvp_test, FromJson_OctetString_FormEncodesAsTheHex) {
+    // a readable form is only another way to write the bytes: same wire, same JSON back (hex)
+    codec::Avp a = codec::Avp::fromJson("NAS-IP-Address", nlohmann::json{{"ipv4", "10.0.0.1"}}, dict_);
+    codec::Avp b = codec::Avp::fromJson("NAS-IP-Address", nlohmann::json("0a000001"), dict_);
+    core::Buffer ea, eb;
+    a.encode(ea, dict_);
+    b.encode(eb, dict_);
+    EXPECT_EQ(ea, eb);
+    EXPECT_EQ(a.toJson(dict_), "0a000001");
+}
+
+TEST_F(CodecAvp_test, FromJson_OctetString_InvalidFormsThrow) {
+    const std::vector<nlohmann::json> bad = {
+        nlohmann::json::object(),        // no key
+        {{"text", "a"}, {"hex", "00"}},  // two keys
+        {{"base64", "AA=="}},            // unknown form
+        {{"text", 1}},                   // not a string
+        {{"ipv4", "300.1.1.1"}},
+        {{"ipv6", "10.0.0.1"}},
+        {{"ipv6Prefix", "2001:db8::"}},
+        {{"ipv6Prefix", "2001:db8::/129"}},
+        {{"msTimeZone", "+01:10"}},
+        {{"msTimeZone", "0100"}},
+        {{"msTimeZone", "+01:00+3"}},
+        {{"uli", {{"type", "cgi"}, {"mcc", "214"}, {"mnc", "07"}}}},
+        {{"uli", {{"type", "tai"}, {"mcc", "21"}, {"mnc", "07"}, {"tac", 1}}}},
+        {{"uli", {{"type", "tai"}, {"mcc", "214"}, {"mnc", "07"}, {"tac", 70000}}}},
+        {{"uli", {{"type", "tai"}, {"mcc", "214"}, {"mnc", "07"}, {"tac", "7890"}}}},  // hex needs 0x
+        {{"uli", {{"type", "ecgi"}, {"mcc", "214"}, {"mnc", "07"}}}},                  // eci missing
+    };
+    for (const auto& form : bad) EXPECT_THROW(octets(form, dict_), std::runtime_error) << form.dump();
+}
+
 TEST_F(CodecAvp_test, FromJson_UTF8String) {
     nlohmann::json value = "charlie@domain.net";
     codec::Avp avp = codec::Avp::fromJson("User-Name", value, dict_);
